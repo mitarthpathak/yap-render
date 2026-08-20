@@ -19,6 +19,7 @@ type SignRuntime = {
 type AvatarPlayerProps = {
   phrase: string
   requestId: number
+  model?: 'default' | 'human'
   appendToQueue?: boolean
   stopId?: number
   onStateChange: (state: 'loading' | 'ready' | 'signing') => void
@@ -27,7 +28,7 @@ type AvatarPlayerProps = {
 const wordAnimations = words as Record<string, (runtime: SignRuntime) => void>
 const alphabetAnimations = alphabets as Record<string, (runtime: SignRuntime) => void>
 
-export function AvatarPlayer({ phrase, requestId, appendToQueue = false, stopId = 0, onStateChange }: AvatarPlayerProps) {
+export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQueue = false, stopId = 0, onStateChange }: AvatarPlayerProps) {
   const mountRef = useRef<HTMLDivElement>(null)
   const runtimeRef = useRef<SignRuntime>({ animations: [], characters: [], pending: true })
   const readyRef = useRef(false)
@@ -62,6 +63,12 @@ export function AvatarPlayer({ phrase, requestId, appendToQueue = false, stopId 
     if (!mount) return
 
     const runtime = runtimeRef.current
+    runtime.animations = []
+    runtime.characters = []
+    runtime.pending = true
+    runtime.avatar = undefined
+    readyRef.current = false
+    onStateChange('loading')
     const scene = new THREE.Scene()
     scene.background = new THREE.Color('#e4e8df')
     // Keep the avatar framed from head through the hips, including when the
@@ -98,7 +105,8 @@ export function AvatarPlayer({ phrase, requestId, appendToQueue = false, stopId 
 
     let disposed = false
     const loader = new GLTFLoader()
-    loader.load('/models/ybot.glb', (gltf) => {
+    const modelPath = model === 'human' ? '/models/brunette.glb' : '/models/ybot.glb'
+    loader.load(modelPath, (gltf) => {
       if (disposed) return
       const avatar = gltf.scene
       avatar.traverse((child) => {
@@ -133,7 +141,7 @@ export function AvatarPlayer({ phrase, requestId, appendToQueue = false, stopId 
         const frame = queue[0]
         for (let index = 0; index < frame.length;) {
           const [boneName, action, axis, target, direction] = frame[index]
-          const bone = runtime.avatar.getObjectByName(boneName) as THREE.Object3D | undefined
+          const bone = getAvatarBone(runtime.avatar, boneName)
           if (!bone) {
             frame.splice(index, 1)
             continue
@@ -169,9 +177,24 @@ export function AvatarPlayer({ phrase, requestId, appendToQueue = false, stopId 
       renderer.dispose()
       mount.replaceChildren()
     }
-  }, [onStateChange])
+  }, [model, onStateChange])
 
   return <div ref={mountRef} className="avatar-canvas" aria-label="Animated Indian Sign Language avatar" />
+}
+
+function getAvatarBone(avatar: THREE.Object3D, boneName: string) {
+  // Animation tables use the compact Mixamo form. Asset exporters may store
+  // the same bone as `mixamorig:Bone` (YBot) or simply `Bone` (the human avatar).
+  const candidates = [
+    boneName,
+    boneName.replace(/^mixamorig/, 'mixamorig:'),
+    boneName.replace(/^mixamorig/, ''),
+  ]
+  for (const candidate of candidates) {
+    const bone = avatar.getObjectByName(candidate)
+    if (bone) return bone
+  }
+  return undefined
 }
 
 function enqueuePhrase(input: string, runtime: SignRuntime, append = false) {
