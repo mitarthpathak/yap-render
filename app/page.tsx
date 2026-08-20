@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { type FormEvent, useEffect, useRef, useState } from 'react'
 import { AvatarPlayer } from '@/components/avatar/AvatarPlayer'
 import {
   ArrowDownRight,
@@ -8,14 +8,36 @@ import {
   AudioLines,
   Globe2,
   Hand,
+  LayoutDashboard,
+  LogOut,
   Menu,
   Mic,
   Move3d,
   Play,
   Square,
   Sparkles,
+  MicOff,
+  LogIn,
+  UserPlus,
+  UserRound,
   X,
 } from 'lucide-react'
+
+type SpeechRecognitionResult = ArrayLike<{ transcript: string }> & { isFinal?: boolean }
+type SpeechRecognitionConstructor = new () => {
+  continuous: boolean
+  interimResults: boolean
+  lang: string
+  onstart: (() => void) | null
+  onend: (() => void) | null
+  onerror: (() => void) | null
+  onresult: ((event: { resultIndex: number; results: ArrayLike<SpeechRecognitionResult> }) => void) | null
+  start: () => void
+  stop: () => void
+  abort: () => void
+}
+
+type LocalAccount = { name: string; email: string }
 
 const features = [
   { icon: Mic, title: 'Speak naturally', text: 'Yap captures the rhythm, intent, and nuance of everyday speech.' },
@@ -26,8 +48,20 @@ const features = [
 export default function Page() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [translation, setTranslation] = useState('YOU HOME')
+  const [avatarPhrase, setAvatarPhrase] = useState('YOU HOME')
   const [requestId, setRequestId] = useState(0)
+  const [stopId, setStopId] = useState(0)
   const [avatarState, setAvatarState] = useState<'loading' | 'ready' | 'signing'>('loading')
+  const [speechSupported, setSpeechSupported] = useState(false)
+  const [isListening, setIsListening] = useState(false)
+  const [liveMode, setLiveMode] = useState(false)
+  const [authOpen, setAuthOpen] = useState(false)
+  const [authMode, setAuthMode] = useState<'signin' | 'signup'>('signin')
+  const [account, setAccount] = useState<LocalAccount | null>(null)
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false)
+  const [dashboardOpen, setDashboardOpen] = useState(false)
+  const recognitionRef = useRef<InstanceType<SpeechRecognitionConstructor> | null>(null)
+  const liveModeRef = useRef(false)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -38,27 +72,155 @@ export default function Page() {
     return () => observer.disconnect()
   }, [])
 
+  useEffect(() => {
+    const savedAccount = window.localStorage.getItem('yap-render-account')
+    if (savedAccount) setAccount(JSON.parse(savedAccount) as LocalAccount)
+  }, [])
+
+  useEffect(() => {
+    const speechWindow = window as typeof window & {
+      SpeechRecognition?: SpeechRecognitionConstructor
+      webkitSpeechRecognition?: SpeechRecognitionConstructor
+    }
+    const SpeechRecognition = speechWindow.SpeechRecognition || speechWindow.webkitSpeechRecognition
+    if (!SpeechRecognition) return
+
+    setSpeechSupported(true)
+    const recognition = new SpeechRecognition()
+    recognition.continuous = true
+    recognition.interimResults = true
+    recognition.lang = 'en-IN'
+    recognition.onstart = () => setIsListening(true)
+    recognition.onend = () => {
+      setIsListening(false)
+      if (liveModeRef.current) window.setTimeout(() => {
+        try { recognition.start() } catch { /* The recognizer is already restarting. */ }
+      }, 220)
+    }
+    recognition.onerror = () => setIsListening(false)
+    recognition.onresult = (event) => {
+      let transcript = ''
+      for (let index = 0; index < event.results.length; index += 1) transcript += event.results[index][0]?.transcript || ''
+      setTranslation(transcript.trim())
+      if (!liveModeRef.current) return
+      let finalChunk = ''
+      for (let index = event.resultIndex; index < event.results.length; index += 1) {
+        if (event.results[index].isFinal) finalChunk += event.results[index][0]?.transcript || ''
+      }
+      if (finalChunk.trim()) {
+        setAvatarPhrase(finalChunk.trim())
+        setRequestId((current) => current + 1)
+      }
+    }
+    recognitionRef.current = recognition
+
+    return () => {
+      recognition.abort()
+      recognitionRef.current = null
+    }
+  }, [])
+
   const runTranslation = () => {
-    if (translation.trim()) setRequestId((current) => current + 1)
+    if (translation.trim()) {
+      setAvatarPhrase(translation)
+      setRequestId((current) => current + 1)
+    }
+  }
+
+  const toggleVoiceInput = () => {
+    const recognition = recognitionRef.current
+    if (!recognition) return
+    if (isListening) recognition.stop()
+    else recognition.start()
+  }
+
+  const toggleLiveMode = () => {
+    const nextMode = !liveMode
+    liveModeRef.current = nextMode
+    setLiveMode(nextMode)
+    const recognition = recognitionRef.current
+    if (!recognition) return
+    if (nextMode && !isListening) recognition.start()
+    if (!nextMode && isListening) recognition.stop()
+  }
+
+  const stopTranslation = () => {
+    liveModeRef.current = false
+    setLiveMode(false)
+    if (isListening) recognitionRef.current?.stop()
+    setStopId((current) => current + 1)
+  }
+
+  const openAuth = (mode: 'signin' | 'signup') => {
+    setAuthMode(mode)
+    setAuthOpen(true)
+  }
+
+  const submitAuth = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const data = new FormData(event.currentTarget)
+    const email = String(data.get('email') || '')
+    const name = authMode === 'signup' ? String(data.get('name') || '') : email.split('@')[0]
+    const nextAccount = { name: name || 'Member', email }
+    window.localStorage.setItem('yap-render-account', JSON.stringify(nextAccount))
+    setAccount(nextAccount)
+    setAuthOpen(false)
+  }
+
+  const signOut = () => {
+    window.localStorage.removeItem('yap-render-account')
+    setAccount(null)
+    setAccountMenuOpen(false)
+    setDashboardOpen(false)
+    setAuthOpen(false)
   }
 
   return (
     <main className="site-shell">
       <header className="topbar">
         <a className="brand" href="#top" aria-label="Yap and Render home">
-          <span className="brand-mark"><Hand size={18} strokeWidth={2.5} /></span>
-          <span>yap<span className="brand-slash">/</span>render</span>
+          <span className="brand-mark"><img src="/yap-render-logo-mark.png" alt="" /></span>
+          <span>yap &amp; render</span>
         </a>
         <nav className={menuOpen ? 'nav-links nav-open' : 'nav-links'} aria-label="Main navigation">
           <a href="#how-it-works" onClick={() => setMenuOpen(false)}>How it works</a>
           <a href="#why-it-matters" onClick={() => setMenuOpen(false)}>Why it matters</a>
           <a href="#about" onClick={() => setMenuOpen(false)}>About</a>
         </nav>
-        <a className="nav-cta" href="#try-it">Try the demo <ArrowRight size={16} /></a>
+        <div className="auth-actions">
+          {account ? <div className="account-menu"><button className="account-button" onClick={() => setAccountMenuOpen((open) => !open)} aria-expanded={accountMenuOpen} aria-haspopup="menu"><UserRound size={15} /> {account.name}</button>{accountMenuOpen && <div className="account-dropdown" role="menu"><button type="button" role="menuitem" onClick={() => { setAccountMenuOpen(false); setDashboardOpen(true) }}><LayoutDashboard size={15} /> Dashboard</button><button type="button" role="menuitem" onClick={signOut}><LogOut size={15} /> Sign out</button></div>}</div> : <><button className="auth-link" onClick={() => openAuth('signin')}>Sign in</button><button className="nav-cta" onClick={() => openAuth('signup')}>Sign up <UserPlus size={15} /></button></>}
+        </div>
         <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? 'Close menu' : 'Open menu'} aria-expanded={menuOpen}>
           {menuOpen ? <X size={21} /> : <Menu size={21} />}
         </button>
       </header>
+
+      {authOpen && <div className="auth-backdrop" role="presentation" onMouseDown={() => setAuthOpen(false)}>
+        <section className="auth-modal" role="dialog" aria-modal="true" aria-labelledby="auth-title" onMouseDown={(event) => event.stopPropagation()}>
+          <button className="auth-close" onClick={() => setAuthOpen(false)} aria-label="Close account dialog"><X size={18} /></button>
+          <span className="auth-mark"><Hand size={18} /></span>
+          <p className="eyebrow">Yap / Render account</p>
+          <h2 id="auth-title">{account ? 'You are signed in.' : authMode === 'signup' ? 'Create your account.' : 'Welcome back.'}</h2>
+          {account ? <><p className="auth-copy">Signed in as {account.email}</p><button className="auth-submit" onClick={signOut}>Sign out</button></> : <form onSubmit={submitAuth} className="auth-form">
+            {authMode === 'signup' && <label>Name<input name="name" required autoComplete="name" placeholder="Your name" /></label>}
+            <label>Email<input name="email" type="email" required autoComplete="email" placeholder="you@example.com" /></label>
+            <label>Password<input name="password" type="password" required minLength={6} autoComplete={authMode === 'signup' ? 'new-password' : 'current-password'} placeholder="At least 6 characters" /></label>
+            <button className="auth-submit" type="submit">{authMode === 'signup' ? 'Create account' : 'Sign in'} <LogIn size={15} /></button>
+          </form>}
+          {!account && <button className="auth-switch" onClick={() => setAuthMode(authMode === 'signup' ? 'signin' : 'signup')}>{authMode === 'signup' ? 'Already have an account? Sign in' : 'New here? Create an account'}</button>}
+        </section>
+      </div>}
+
+      {dashboardOpen && account && <div className="auth-backdrop dashboard-backdrop" role="presentation" onMouseDown={() => setDashboardOpen(false)}>
+        <section className="dashboard-modal" role="dialog" aria-modal="true" aria-labelledby="dashboard-title" onMouseDown={(event) => event.stopPropagation()}>
+          <button className="auth-close" onClick={() => setDashboardOpen(false)} aria-label="Close dashboard"><X size={18} /></button>
+          <div className="dashboard-heading"><span className="auth-mark"><LayoutDashboard size={18} /></span><div><p className="eyebrow">Your dashboard</p><h2 id="dashboard-title">Hello, {account.name}.</h2></div></div>
+          <div className="dashboard-profile"><span className="dashboard-avatar">{account.name.charAt(0).toUpperCase()}</span><div><strong>{account.name}</strong><span>{account.email}</span></div></div>
+          <div className="dashboard-stats" aria-label="Account status"><div><span>Account</span><strong>Active</strong></div><div><span>Translator</span><strong>Ready</strong></div><div><span>Voice language</span><strong>English (IN)</strong></div></div>
+          <div className="dashboard-details"><p>Account details</p><dl><div><dt>Name</dt><dd>{account.name}</dd></div><div><dt>Email</dt><dd>{account.email}</dd></div></dl></div>
+          <button className="auth-submit" onClick={() => { setDashboardOpen(false); document.getElementById('try-it')?.scrollIntoView({ behavior: 'smooth' }) }}>Open translator <ArrowDownRight size={15} /></button>
+        </section>
+      </div>}
 
       <section className="hero section-pad" id="top">
         <div className="hero-copy reveal">
@@ -73,20 +235,24 @@ export default function Page() {
         </div>
 
         <div className="avatar-stage reveal" id="try-it">
-          <div className="terminal-window" role="img" aria-label="Light mode automation dashboard showing Yap and Render translation workflows">
+          <div className="terminal-window" aria-label="Yap and Render live translation workspace">
             <div className="terminal-chrome"><span className="chrome-dot red" /><span className="chrome-dot yellow" /><span className="chrome-dot green" /><span className="terminal-title">yap / render</span></div>
             <div className="terminal-body avatar-terminal-body">
-              <div className="terminal-heading"><span>automations</span><span className="terminal-status">live</span></div>
               <div className="avatar-canvas-shell" aria-label="Interactive 3D avatar canvas ready for Indian Sign Language playback">
-                <AvatarPlayer phrase={translation} requestId={requestId} onStateChange={setAvatarState} />
+                <AvatarPlayer phrase={avatarPhrase} requestId={requestId} appendToQueue={liveMode} stopId={stopId} onStateChange={setAvatarState} />
                 <span className="canvas-badge"><span className="live-dot" /> ISL AVATAR · {avatarState}</span>
               </div>
               <div className="translator-controls">
                 <input value={translation} onChange={(event) => setTranslation(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && runTranslation()} aria-label="Text to translate into Indian Sign Language" placeholder="Type a message…" />
-                <button onClick={runTranslation} className="translator-run"><Play size={13} fill="currentColor" /> Sign it</button>
+                <button type="button" onClick={toggleVoiceInput} className={isListening ? 'voice-input is-listening' : 'voice-input'} aria-label={isListening ? 'Stop voice input' : 'Start voice input'} title={speechSupported ? (isListening ? 'Stop listening' : 'Speak your message') : 'Voice input is not supported in this browser'} disabled={!speechSupported}>
+                  {isListening ? <MicOff size={15} /> : <Mic size={15} />}
+                  <span>{isListening ? 'Listening' : 'Voice'}</span>
+                </button>
+                <button type="button" onClick={toggleLiveMode} className={liveMode ? 'live-translation is-active' : 'live-translation'} disabled={!speechSupported} title="Continuously convert final speech into ISL"><span /> Live</button>
               </div>
+              <div className="terminal-footer terminal-footer-live"><button type="button" onClick={stopTranslation} className="terminal-play terminal-stop" aria-label="Stop translation"><Square size={11} fill="currentColor" /></button><span>{liveMode ? 'live translation is listening' : avatarState === 'signing' ? 'translation in progress' : avatarState === 'loading' ? 'loading avatar' : 'ready — words or A–Z fingerspelling'}</span><span className="terminal-time">ISL</span></div>
               <div className="quick-phrases" aria-label="Try a sample phrase">
-                {['YOU', 'HOME', 'TIME', 'PERSON'].map((word) => <button key={word} onClick={() => { setTranslation(word); setRequestId((current) => current + 1) }}>{word}</button>)}
+                {['YOU', 'HOME', 'TIME', 'PERSON'].map((word) => <button key={word} onClick={() => { setTranslation(word); setAvatarPhrase(word); setRequestId((current) => current + 1) }}>{word}</button>)}
               </div>
               <div className="terminal-footer"><span className="terminal-play">{avatarState === 'signing' ? <Square size={11} fill="currentColor" /> : <Play size={14} fill="currentColor" />}</span><span>{avatarState === 'signing' ? 'translation in progress' : avatarState === 'loading' ? 'loading avatar' : 'ready — words or A–Z fingerspelling'}</span><span className="terminal-time">ISL</span></div>
             </div>
@@ -110,7 +276,7 @@ export default function Page() {
 
       <section className="final-cta section-pad reveal" id="about"><div className="cta-symbol"><AudioLines size={28} /></div><p className="eyebrow">A more connected future</p><h2>Let&apos;s make room<br />for <em>every voice.</em></h2><p>We&apos;re early, curious, and building in the open.</p><a className="button button-coral" href="mailto:hello@yapandrender.com">Say hello <ArrowRight size={17} /></a></section>
 
-      <footer className="footer"><a className="brand" href="#top"><span className="brand-mark"><Hand size={16} /></span><span>yap<span className="brand-slash">/</span>render</span></a><span>Made for more ways to connect.</span><span>© 2026 Yap & Render</span></footer>
+      <footer className="footer"><a className="brand" href="#top" aria-label="Yap and Render home"><span className="brand-mark"><img src="/yap-render-logo-mark.png" alt="" /></span><span>yap &amp; render</span></a><span>Made for more ways to connect.</span><span>© 2026 Yap & Render</span></footer>
     </main>
   )
 }

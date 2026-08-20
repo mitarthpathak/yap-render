@@ -6,6 +6,7 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import * as words from './animations/words'
 import * as alphabets from './animations/alphabets'
 import { defaultPose } from './animations/defaultPose'
+import { textToGloss } from './textToGloss'
 
 type SignInstruction = [string, 'rotation', 'x' | 'y' | 'z', number, '+' | '-']
 type SignRuntime = {
@@ -18,17 +19,24 @@ type SignRuntime = {
 type AvatarPlayerProps = {
   phrase: string
   requestId: number
+  appendToQueue?: boolean
+  stopId?: number
   onStateChange: (state: 'loading' | 'ready' | 'signing') => void
 }
 
 const wordAnimations = words as Record<string, (runtime: SignRuntime) => void>
 const alphabetAnimations = alphabets as Record<string, (runtime: SignRuntime) => void>
 
-export function AvatarPlayer({ phrase, requestId, onStateChange }: AvatarPlayerProps) {
+export function AvatarPlayer({ phrase, requestId, appendToQueue = false, stopId = 0, onStateChange }: AvatarPlayerProps) {
   const mountRef = useRef<HTMLDivElement>(null)
   const runtimeRef = useRef<SignRuntime>({ animations: [], characters: [], pending: true })
   const readyRef = useRef(false)
   const pendingPhraseRef = useRef<{ phrase: string; requestId: number } | null>(null)
+  const appendToQueueRef = useRef(appendToQueue)
+
+  useEffect(() => {
+    appendToQueueRef.current = appendToQueue
+  }, [appendToQueue])
 
   useEffect(() => {
     if (!requestId) return
@@ -38,9 +46,16 @@ export function AvatarPlayer({ phrase, requestId, onStateChange }: AvatarPlayerP
       onStateChange('loading')
       return
     }
-    enqueuePhrase(next.phrase, runtimeRef.current)
+    enqueuePhrase(next.phrase, runtimeRef.current, appendToQueue)
     onStateChange('signing')
   }, [phrase, requestId, onStateChange])
+
+  useEffect(() => {
+    if (!stopId) return
+    pendingPhraseRef.current = null
+    runtimeRef.current.animations = []
+    onStateChange('ready')
+  }, [stopId, onStateChange])
 
   useEffect(() => {
     const mount = mountRef.current
@@ -49,8 +64,11 @@ export function AvatarPlayer({ phrase, requestId, onStateChange }: AvatarPlayerP
     const runtime = runtimeRef.current
     const scene = new THREE.Scene()
     scene.background = new THREE.Color('#e4e8df')
+    // Keep the avatar framed from head through the hips, including when the
+    // canvas becomes wider on desktop. The old close-up was centered on the
+    // chest, which cropped the lower body out of the stage.
     const camera = new THREE.PerspectiveCamera(31, 1, 0.1, 1000)
-    camera.position.set(0, 1.35, 1.75)
+    camera.position.set(0, 0.62, 3)
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false })
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     renderer.shadowMap.enabled = true
@@ -66,15 +84,6 @@ export function AvatarPlayer({ phrase, requestId, onStateChange }: AvatarPlayerP
     const rimLight = new THREE.PointLight('#ef714f', 15, 8)
     rimLight.position.set(-2.8, 2, 2)
     scene.add(rimLight)
-
-    const floor = new THREE.Mesh(
-      new THREE.CircleGeometry(1.15, 48),
-      new THREE.ShadowMaterial({ color: '#72806b', opacity: 0.16 }),
-    )
-    floor.rotation.x = -Math.PI / 2
-    floor.position.y = -0.02
-    floor.receiveShadow = true
-    scene.add(floor)
 
     const resize = () => {
       const { width, height } = mount.getBoundingClientRect()
@@ -97,13 +106,16 @@ export function AvatarPlayer({ phrase, requestId, onStateChange }: AvatarPlayerP
         child.frustumCulled = false
       })
       runtime.avatar = avatar
+      // Preserve the requested close framing, while placing the face just
+      // above the canvas centre instead of against the top edge.
+      avatar.position.y = -0.85
       scene.add(avatar)
       defaultPose(runtime)
       readyRef.current = true
       const queuedRequest = pendingPhraseRef.current
       if (queuedRequest) {
         pendingPhraseRef.current = null
-        enqueuePhrase(queuedRequest.phrase, runtime)
+        enqueuePhrase(queuedRequest.phrase, runtime, appendToQueueRef.current)
         onStateChange('signing')
       } else {
         onStateChange('ready')
@@ -162,11 +174,11 @@ export function AvatarPlayer({ phrase, requestId, onStateChange }: AvatarPlayerP
   return <div ref={mountRef} className="avatar-canvas" aria-label="Animated Indian Sign Language avatar" />
 }
 
-function enqueuePhrase(input: string, runtime: SignRuntime) {
-  runtime.animations = []
-  const phrase = input.toUpperCase().replace(/[^A-Z ]/g, ' ').trim()
-  for (const word of phrase.split(/\s+/)) {
-    if (!word) continue
+function enqueuePhrase(input: string, runtime: SignRuntime, append = false) {
+  if (!append) runtime.animations = []
+  const { tokens } = textToGloss(input)
+  for (const token of tokens) {
+    const word = token.toUpperCase()
     const wordAnimation = wordAnimations[word]
     if (wordAnimation) {
       wordAnimation(runtime)
