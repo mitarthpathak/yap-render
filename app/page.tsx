@@ -1,11 +1,12 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { Canvas } from '@react-three/fiber'
+import { OrbitControls, PerspectiveCamera } from '@react-three/drei'
 import {
   ArrowDownRight,
   ArrowRight,
   AudioLines,
-  Check,
   Globe2,
   Hand,
   Menu,
@@ -21,6 +22,45 @@ const features = [
   { icon: Move3d, title: 'See every sign', text: 'Render turns language into expressive Indian Sign Language in real time.' },
   { icon: Globe2, title: 'Reach more people', text: 'Make classrooms, clinics, and conversations feel open to everyone.' },
 ]
+
+function AvatarScene() {
+  return (
+    <Canvas className="avatar-canvas" shadows dpr={[1, 2]}>
+      <PerspectiveCamera makeDefault position={[0, 1.5, 5.8]} fov={34} />
+      <color attach="background" args={['#e4e8df']} />
+      <ambientLight intensity={2.1} />
+      <directionalLight position={[3, 5, 4]} intensity={3.2} castShadow />
+      <pointLight position={[-3, 2, 2]} intensity={1.8} color="#ef714f" />
+      <group position={[0, -0.55, 0]}>
+        <mesh position={[0, 0.25, 0]} castShadow>
+          <capsuleGeometry args={[0.82, 1.15, 12, 32]} />
+          <meshStandardMaterial color="#d9ed61" roughness={0.68} />
+        </mesh>
+        <mesh position={[0, 1.48, 0]} castShadow>
+          <capsuleGeometry args={[0.58, 0.76, 12, 32]} />
+          <meshStandardMaterial color="#c98266" roughness={0.72} />
+        </mesh>
+        <mesh position={[0, 1.98, -0.03]} castShadow>
+          <sphereGeometry args={[0.61, 32, 20, 0, Math.PI * 2, 0, Math.PI * 0.55]} />
+          <meshStandardMaterial color="#172020" roughness={0.85} />
+        </mesh>
+        <mesh position={[-0.92, 0.52, 0.04]} rotation={[0, 0, -0.35]} castShadow>
+          <capsuleGeometry args={[0.12, 0.85, 8, 16]} />
+          <meshStandardMaterial color="#c98266" roughness={0.72} />
+        </mesh>
+        <mesh position={[0.92, 0.52, 0.04]} rotation={[0, 0, 0.35]} castShadow>
+          <capsuleGeometry args={[0.12, 0.85, 8, 16]} />
+          <meshStandardMaterial color="#c98266" roughness={0.72} />
+        </mesh>
+        <mesh position={[0, 0.1, 0.63]}>
+          <boxGeometry args={[0.27, 0.12, 0.04]} />
+          <meshBasicMaterial color="#172020" />
+        </mesh>
+      </group>
+      <OrbitControls enablePan={false} enableZoom={false} minPolarAngle={1.25} maxPolarAngle={1.75} autoRotate autoRotateSpeed={1.1} />
+    </Canvas>
+  )
+}
 
 export default function Page() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -68,17 +108,13 @@ export default function Page() {
         <div className="avatar-stage reveal" id="try-it">
           <div className="terminal-window" role="img" aria-label="Light mode automation dashboard showing Yap and Render translation workflows">
             <div className="terminal-chrome"><span className="chrome-dot red" /><span className="chrome-dot yellow" /><span className="chrome-dot green" /><span className="terminal-title">yap / render</span></div>
-            <div className="terminal-body">
+            <div className="terminal-body avatar-terminal-body">
               <div className="terminal-heading"><span>automations</span><span className="terminal-status">live</span></div>
-              <div className="terminal-table" role="table" aria-label="Translation automations">
-                <div className="terminal-row terminal-head" role="row"><span>name</span><span>schedule</span><span>last run</span></div>
-                <div className="terminal-row" role="row"><strong>daily-translation</strong><span>daily 09:00</span><span className="status-running">● running</span></div>
-                <div className="terminal-row" role="row"><strong>classroom-captions</strong><span>sun 11:00</span><span className="status-done">✓ 2h ago</span></div>
-                <div className="terminal-row" role="row"><strong>clinic-conversations</strong><span>weekly</span><span className="status-done">✓ 1d ago</span></div>
-                <div className="terminal-row" role="row"><strong>community-sync</strong><span>monthly</span><span className="status-done">✓ 3d ago</span></div>
+              <div className="avatar-canvas-shell" aria-label="Interactive 3D avatar canvas ready for Indian Sign Language playback">
+                <AvatarScene />
+                <span className="canvas-badge"><span className="live-dot" /> 3D AVATAR CANVAS</span>
               </div>
-              <div className="terminal-output"><div className="output-label">daily-translation</div><p>→ listening for spoken language...</p><p>→ rendering Indian Sign Language</p><p>→ conversation ready to share</p></div>
-              <div className="terminal-footer"><button onClick={() => setIsPlaying(!isPlaying)} aria-label={isPlaying ? 'Pause translation demo' : 'Play translation demo'} className="terminal-play">{isPlaying ? <span className="pause-bars" /> : <Play size={14} fill="currentColor" />}</button><span>{isPlaying ? 'translation in progress' : 'start live translation'}</span><span className="terminal-time">0:08</span></div>
+              <div className="terminal-footer"><button onClick={() => setIsPlaying(!isPlaying)} aria-label={isPlaying ? 'Pause translation demo' : 'Play translation demo'} className="terminal-play">{isPlaying ? <span className="pause-bars" /> : <Play size={14} fill="currentColor" />}</button><span>{isPlaying ? 'translation in progress' : 'translation ready'}</span><span className="terminal-time">0:08</span></div>
             </div>
           </div>
         </div>
