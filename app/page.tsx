@@ -66,25 +66,21 @@ export default function Page() {
         </div>
 
         <div className="avatar-stage reveal" id="try-it">
-          <div className="stage-label"><span className="live-dot" /> Live translation</div>
-          <div className="stage-grid" aria-hidden="true" />
-          <div className="avatar-orbit orbit-one" aria-hidden="true" />
-          <div className="avatar-orbit orbit-two" aria-hidden="true" />
-          <div className="avatar-placeholder" role="img" aria-label="3D avatar preview placeholder">
-            <div className="avatar-halo" />
-            <div className="avatar-head"><div className="avatar-face"><span /><span /></div></div>
-            <div className="avatar-neck" />
-            <div className="avatar-body"><div className="avatar-shirt-mark">Y<span>/</span>R</div></div>
-            <div className="avatar-hand left-hand"><Hand size={52} /></div>
-            <div className="avatar-hand right-hand"><Hand size={45} /></div>
+          <div className="terminal-window" role="img" aria-label="Light mode automation dashboard showing Yap and Render translation workflows">
+            <div className="terminal-chrome"><span className="chrome-dot red" /><span className="chrome-dot yellow" /><span className="chrome-dot green" /><span className="terminal-title">yap / render</span></div>
+            <div className="terminal-body">
+              <div className="terminal-heading"><span>automations</span><span className="terminal-status">live</span></div>
+              <div className="terminal-table" role="table" aria-label="Translation automations">
+                <div className="terminal-row terminal-head" role="row"><span>name</span><span>schedule</span><span>last run</span></div>
+                <div className="terminal-row" role="row"><strong>daily-translation</strong><span>daily 09:00</span><span className="status-running">● running</span></div>
+                <div className="terminal-row" role="row"><strong>classroom-captions</strong><span>sun 11:00</span><span className="status-done">✓ 2h ago</span></div>
+                <div className="terminal-row" role="row"><strong>clinic-conversations</strong><span>weekly</span><span className="status-done">✓ 1d ago</span></div>
+                <div className="terminal-row" role="row"><strong>community-sync</strong><span>monthly</span><span className="status-done">✓ 3d ago</span></div>
+              </div>
+              <div className="terminal-output"><div className="output-label">daily-translation</div><p>→ listening for spoken language...</p><p>→ rendering Indian Sign Language</p><p>→ conversation ready to share</p></div>
+              <div className="terminal-footer"><button onClick={() => setIsPlaying(!isPlaying)} aria-label={isPlaying ? 'Pause translation demo' : 'Play translation demo'} className="terminal-play">{isPlaying ? <span className="pause-bars" /> : <Play size={14} fill="currentColor" />}</button><span>{isPlaying ? 'translation in progress' : 'start live translation'}</span><span className="terminal-time">0:08</span></div>
+            </div>
           </div>
-          <div className="stage-caption"><span>Namaste</span><small>नमस्ते</small></div>
-          <div className="stage-controls">
-            <button onClick={() => setIsPlaying(!isPlaying)} aria-label={isPlaying ? 'Pause demo' : 'Play demo'} className="control-play">{isPlaying ? <span className="pause-bars" /> : <Play size={15} fill="currentColor" />}</button>
-            <div className="control-line"><span style={{ width: isPlaying ? '68%' : '32%' }} /></div>
-            <span className="control-time">0:08</span>
-          </div>
-          <div className="stage-canvas-note"><Move3d size={13} /> 3D avatar canvas</div>
         </div>
       </section>
 
