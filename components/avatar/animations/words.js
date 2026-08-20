@@ -1,10 +1,240 @@
+// Core animations
 import { TIME } from './Words/TIME';
 import { HOME } from './Words/HOME';
 import { PERSON } from './Words/PERSON';
 import { YOU } from './Words/YOU';
+import { DRINK, DRINKING, DRANK, DRINKS } from './Words/DRINK';
+import { EAT, EATING, ATE, FOOD } from './Words/EAT';
 
-var wordList = ['TIME', 'HOME', 'PERSON', 'YOU'];
+// Basic & Social Expressions
+import {
+    YES, NO, PLEASE, SORRY, WELCOME, GOOD, BAD, HELP, STOP, WAIT
+} from './Words/BasicSocial';
+
+// Actions & Movement
+import {
+    COME, GO, GIVE, TAKE, WANT, NEED, LIKE, KNOW, UNDERSTAND, ASK
+} from './Words/Actions';
+
+// Discourse & Communication
+import {
+    ANSWER, TELL, SHOW, LOOK, SEE, LISTEN, TALK, START, FINISH, AGAIN
+} from './Words/Discourse';
+
+// Daily Life, Health & Medical
+import {
+    WATER, SLEEP, TOILET, DOCTOR, HOSPITAL, PAIN
+} from './Words/DailyHealth';
+
+// Education & Academics
+import {
+    SCHOOL, CLASS, TEACHER, STUDENT, BOOK, READ, WRITE, STUDY, LEARN, EXAM
+} from './Words/Education';
+
+// Tech, College & Emergency
+import {
+    QUESTION, PROJECT, COMPUTER, COLLEGE, PHONE, MOBILE, EMERGENCY, DANGER, SAFE, POLICE
+} from './Words/TechEmergency';
+
+// Questions
+import { WHAT, WHY, WHEN, WHERE, WHO, HOW, WHICH, HOW_MUCH, HOW_MANY } from './Words/Questions';
+
+// Places
+import { ROAD, CAR, BUS, TRAIN, MARKET, SHOP, CITY, VILLAGE, PARK, OFFICE } from './Words/Places';
+
+// Food & Kitchen
+import { MILK, TEA, COFFEE, FRUIT, VEGETABLE, RICE, BREAD, BREAKFAST, LUNCH, DINNER } from './Words/FoodKitchen';
+
+// Objects
+import { HOUSE, ROOM, DOOR, WINDOW, CHAIR, TABLE, BAG, CLOTHES, KEY, MONEY } from './Words/Objects';
+
+// People & Relations
+import { MAN, WOMAN, CHILD, BOY, GIRL, PARENT, FAMILY, FRIEND, NEIGHBOR, MOTHER, FATHER, BROTHER, SISTER, NAME, AGE } from './Words/PeopleRelations';
+
+// Verbs & Actions
+import { LIVE, WORK, PLAY, WALK, RUN, SIT, STAND, COME_IN, GO_OUT, OPEN, CLOSE, BRING, SEND, RECEIVE, KEEP, USE, MAKE, DO, TRY, NEED_HELP, BEGIN, CHANGE, WAIT_MINUTE, REMEMBER, FORGET, THINK, FEEL, BELIEVE } from './Words/Verbs';
+
+// States & Feelings
+import { BECAUSE, HAPPY, SAD, ANGRY, SCARED, CONFUSED, TIRED, READY, LATE, EARLY, IMPORTANT } from './Words/States';
+
+
+// Grammatical / Inflection Aliases
+const HELPING = HELP;
+const WAITING = WAIT;
+const COMING = COME;
+const GOING = GO;
+const GIVING = GIVE;
+const GAVE = GIVE;
+const TAKING = TAKE;
+const TOOK = TAKE;
+const WANTING = WANT;
+const NEEDING = NEED;
+const LIKING = LIKE;
+const LIKED = LIKE;
+const KNOWING = KNOW;
+const KNEW = KNOW;
+const ASKING = ASK;
+const ASKED = ASK;
+const ANSWERING = ANSWER;
+const ANSWERED = ANSWER;
+const TELLING = TELL;
+const TOLD = TELL;
+const SHOWING = SHOW;
+const SHOWED = SHOW;
+const LOOKING = LOOK;
+const LOOKED = LOOK;
+const SEEING = SEE;
+const SAW = SEE;
+const LISTENING = LISTEN;
+const LISTENED = LISTEN;
+const TALKING = TALK;
+const TALKED = TALK;
+const STARTING = START;
+const STARTED = START;
+const FINISHING = FINISH;
+const FINISHED = FINISH;
+const SLEEPING = SLEEP;
+const SLEPT = SLEEP;
+const TEACHING = TEACHER;
+const TAUGHT = TEACHER;
+const READING = READ;
+const WRITING = WRITE;
+const WROTE = WRITE;
+const STUDYING = STUDY;
+const STUDIED = STUDY;
+const LEARNING = LEARN;
+const LEARNED = LEARN;
+const QUESTIONS = QUESTION;
+const BOOKS = BOOK;
+const DOCTORS = DOCTOR;
+const STUDENTS = STUDENT;
+const TEACHERS = TEACHER;
+const CLASSES = CLASS;
+const SCHOOLS = SCHOOL;
+const COLLEGES = COLLEGE;
+const COMPUTERS = COMPUTER;
+const PROJECTS = PROJECT;
+const PHONES = PHONE;
+const MOBILES = MOBILE;
+const HOMES = HOME;
+const LIVING = LIVE;
+const LIVED = LIVE;
+const WORKING = WORK;
+const WORKED = WORK;
+const PLAYING = PLAY;
+const PLAYED = PLAY;
+const WALKING = WALK;
+const WALKED = WALK;
+const RUNNING = RUN;
+const RAN = RUN;
+const SITTING = SIT;
+const SAT = SIT;
+const STANDING = STAND;
+const STOOD = STAND;
+const BRINGING = BRING;
+const BROUGHT = BRING;
+const SENDING = SEND;
+const SENT = SEND;
+const RECEIVING = RECEIVE;
+const RECEIVED = RECEIVE;
+const KEEPING = KEEP;
+const KEPT = KEEP;
+const USING = USE;
+const USED = USE;
+const MAKING = MAKE;
+const MADE = MAKE;
+const DOING = DO;
+const DID = DO;
+const DONE = DO;
+const TRYING = TRY;
+const TRIED = TRY;
+const BEGINNING = BEGIN;
+const BEGAN = BEGIN;
+const BEGUN = BEGIN;
+const CHANGING = CHANGE;
+const CHANGED = CHANGE;
+const REMEMBERING = REMEMBER;
+const REMEMBERED = REMEMBER;
+const FORGETTING = FORGET;
+const FORGOT = FORGET;
+const FORGOTTEN = FORGET;
+const THINKING = THINK;
+const THOUGHT = THINK;
+const FEELING = FEEL;
+const FELT = FEEL;
+const BELIEVING = BELIEVE;
+const BELIEVED = BELIEVE;
+
+// Master vocabulary list for UI and indexing
+var wordList = [
+    // Basic & Social
+    'YES', 'NO', 'PLEASE', 'SORRY', 'WELCOME', 'GOOD', 'BAD', 'HELP', 'STOP', 'WAIT',
+    // Actions
+    'COME', 'GO', 'GIVE', 'TAKE', 'WANT', 'NEED', 'LIKE', 'KNOW', 'UNDERSTAND', 'ASK',
+    // Discourse
+    'ANSWER', 'TELL', 'SHOW', 'LOOK', 'SEE', 'LISTEN', 'TALK', 'START', 'FINISH', 'AGAIN',
+    // Daily Life & Health
+    'FOOD', 'EAT', 'DRINK', 'WATER', 'SLEEP', 'HOME', 'TOILET', 'DOCTOR', 'HOSPITAL', 'PAIN',
+    // Education & Academics
+    'SCHOOL', 'CLASS', 'TEACHER', 'STUDENT', 'BOOK', 'READ', 'WRITE', 'STUDY', 'LEARN', 'EXAM',
+    // Tech, College & Emergency
+    // Tech, College & Emergency
+    'QUESTION', 'PROJECT', 'COMPUTER', 'COLLEGE', 'PHONE', 'MOBILE', 'EMERGENCY', 'DANGER', 'SAFE', 'POLICE',
+    // Questions
+    'WHAT', 'WHY', 'WHEN', 'WHERE', 'WHO', 'HOW', 'WHICH', 'HOW_MUCH', 'HOW_MANY',
+    // Places
+    'ROAD', 'CAR', 'BUS', 'TRAIN', 'MARKET', 'SHOP', 'CITY', 'VILLAGE', 'PARK', 'OFFICE',
+    // Food & Kitchen
+    'MILK', 'TEA', 'COFFEE', 'FRUIT', 'VEGETABLE', 'RICE', 'BREAD', 'BREAKFAST', 'LUNCH', 'DINNER',
+    // Objects
+    'HOUSE', 'ROOM', 'DOOR', 'WINDOW', 'CHAIR', 'TABLE', 'BAG', 'CLOTHES', 'KEY', 'MONEY',
+    // People & Relations
+    'MAN', 'WOMAN', 'CHILD', 'BOY', 'GIRL', 'PARENT', 'FAMILY', 'FRIEND', 'NEIGHBOR', 'MOTHER', 'FATHER', 'BROTHER', 'SISTER', 'NAME', 'AGE',
+    // Verbs & Actions
+    'LIVE', 'WORK', 'PLAY', 'WALK', 'RUN', 'SIT', 'STAND', 'COME_IN', 'GO_OUT', 'OPEN', 'CLOSE', 'BRING', 'SEND', 'RECEIVE', 'KEEP', 'USE', 'MAKE', 'DO', 'TRY', 'NEED_HELP', 'BEGIN', 'CHANGE', 'WAIT_MINUTE', 'REMEMBER', 'FORGET', 'THINK', 'FEEL', 'BELIEVE',
+    // States & Feelings
+    'BECAUSE', 'HAPPY', 'SAD', 'ANGRY', 'SCARED', 'CONFUSED', 'TIRED', 'READY', 'LATE', 'EARLY', 'IMPORTANT',
+    // Core Legacy
+    'TIME', 'PERSON', 'YOU'
+];
 
 export {
-    TIME, HOME, PERSON, YOU, wordList
-}
+    // Legacy & Core
+    TIME, HOME, HOMES, PERSON, YOU, DRINK, DRINKING, DRANK, DRINKS, EAT, EATING, ATE, FOOD,
+    // Basic & Social
+    YES, NO, PLEASE, SORRY, WELCOME, GOOD, BAD, HELP, HELPING, STOP, WAIT, WAITING,
+    // Actions
+    COME, COMING, GO, GOING, GIVE, GIVING, GAVE, TAKE, TAKING, TOOK,
+    WANT, WANTING, NEED, NEEDING, LIKE, LIKING, LIKED, KNOW, KNOWING, KNEW,
+    UNDERSTAND, ASK, ASKING, ASKED,
+    // Discourse
+    ANSWER, ANSWERING, ANSWERED, TELL, TELLING, TOLD, SHOW, SHOWING, SHOWED,
+    LOOK, LOOKING, LOOKED, SEE, SEEING, SAW, LISTEN, LISTENING, LISTENED,
+    TALK, TALKING, TALKED, START, STARTING, STARTED, FINISH, FINISHING, FINISHED, AGAIN,
+    // Daily & Health
+    WATER, SLEEP, SLEEPING, SLEPT, TOILET, DOCTOR, DOCTORS, HOSPITAL, PAIN,
+    // Education
+    SCHOOL, SCHOOLS, CLASS, CLASSES, TEACHER, TEACHERS, STUDENT, STUDENTS,
+    BOOK, BOOKS, READ, READING, WRITE, WRITING, WROTE, STUDY, STUDYING, STUDIED,
+    LEARN, LEARNING, LEARNED, TEACHING, TAUGHT, EXAM,
+    // Tech & Emergency
+    // Tech & Emergency
+    QUESTION, QUESTIONS, PROJECT, PROJECTS, COMPUTER, COMPUTERS, COLLEGE, COLLEGES,
+    PHONE, PHONES, MOBILE, MOBILES, EMERGENCY, DANGER, SAFE, POLICE,
+    // Questions
+    WHAT, WHY, WHEN, WHERE, WHO, HOW, WHICH, HOW_MUCH, HOW_MANY,
+    // Places
+    ROAD, CAR, BUS, TRAIN, MARKET, SHOP, CITY, VILLAGE, PARK, OFFICE,
+    // Food & Kitchen
+    MILK, TEA, COFFEE, FRUIT, VEGETABLE, RICE, BREAD, BREAKFAST, LUNCH, DINNER,
+    // Objects
+    HOUSE, ROOM, DOOR, WINDOW, CHAIR, TABLE, BAG, CLOTHES, KEY, MONEY,
+    // People & Relations
+    MAN, WOMAN, CHILD, BOY, GIRL, PARENT, FAMILY, FRIEND, NEIGHBOR, MOTHER, FATHER, BROTHER, SISTER, NAME, AGE,
+    // Verbs & Actions
+    LIVE, LIVING, LIVED, WORK, WORKING, WORKED, PLAY, PLAYING, PLAYED, WALK, WALKING, WALKED, RUN, RUNNING, RAN, SIT, SITTING, SAT, STAND, STANDING, STOOD, COME_IN, GO_OUT, OPEN, CLOSE, BRING, BRINGING, BROUGHT, SEND, SENDING, SENT, RECEIVE, RECEIVING, RECEIVED, KEEP, KEEPING, KEPT, USE, USING, USED, MAKE, MAKING, MADE, DO, DOING, DID, DONE, TRY, TRYING, TRIED, NEED_HELP, BEGIN, BEGINNING, BEGAN, BEGUN, CHANGE, CHANGING, CHANGED, WAIT_MINUTE, REMEMBER, REMEMBERING, REMEMBERED, FORGET, FORGETTING, FORGOT, FORGOTTEN, THINK, THINKING, THOUGHT, FEEL, FEELING, FELT, BELIEVE, BELIEVING, BELIEVED,
+    // States & Feelings
+    BECAUSE, HAPPY, SAD, ANGRY, SCARED, CONFUSED, TIRED, READY, LATE, EARLY, IMPORTANT,
+    // List
+    wordList
+};
