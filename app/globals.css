@@ -257,6 +257,29 @@ h1 em, h2 em { color: var(--coral); font-style: italic; }
   .terminal-window { transition: none; }
 }
 
+/* About Us modal */
+.about-backdrop { padding: 1.5rem; }
+.about-modal { position: relative; width: min(100%, 960px); max-height: min(90vh, 720px); overflow-y: auto; padding: clamp(2rem, 5vw, 4rem); background: var(--background); border: 1px solid var(--foreground); box-shadow: 14px 14px 0 var(--lime); }
+.about-identity { display: flex; align-items: center; justify-content: center; gap: 1rem; margin: .5rem 0 2rem; }
+.about-logo-mark { display: grid; place-items: center; width: clamp(96px, 13vw, 150px); height: clamp(96px, 13vw, 150px); padding: .3rem; }
+.about-logo-mark img { width: 100%; height: 100%; object-fit: contain; }
+.about-logo-wordmark { margin: 0; font-size: clamp(1.6rem, 4vw, 3rem); font-weight: 700; letter-spacing: -.07em; }
+.about-logo-wordmark span { color: var(--coral); font-family: Georgia, serif; font-weight: 400; }
+.about-modal > .eyebrow { justify-content: center; }
+.about-modal h2 { margin: .7rem 0 1rem; text-align: center; font-size: clamp(2.6rem, 6vw, 5rem); line-height: .88; }
+.about-copy { max-width: 650px; margin: .4rem auto; color: var(--ink-soft); font-size: .84rem; line-height: 1.55; text-align: center; }
+.about-team { display: grid; grid-template-columns: repeat(5, 1fr); gap: 1px; margin-top: 2.5rem; background: var(--border); border: 1px solid var(--border); }
+.about-member { display: grid; justify-items: center; align-content: start; gap: .5rem; min-height: 150px; padding: 1rem .8rem; background: var(--surface); text-align: center; }
+.about-member-avatar { display: grid; place-items: center; width: 58px; height: 58px; margin-bottom: .15rem; overflow: hidden; border: 2px solid var(--foreground); border-radius: 50%; background: var(--lime); color: var(--foreground); font-size: 1.35rem; font-weight: 800; }
+.about-member-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.about-member strong { font-size: .78rem; line-height: 1.15; }
+.about-member span { color: var(--ink-soft); font-size: .65rem; line-height: 1.35; }
+@media (max-width: 760px) {
+  .about-modal { padding: 2rem 1.25rem; }
+  .about-team { grid-template-columns: repeat(2, 1fr); }
+  .about-member:last-child { grid-column: 1 / -1; }
+}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 10px;
