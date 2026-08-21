@@ -56,6 +56,8 @@ export default function Page() {
   const [avatarModel, setAvatarModel] = useState<'default' | 'human'>('default')
   const [requestId, setRequestId] = useState(0)
   const [stopId, setStopId] = useState(0)
+  const [resetId, setResetId] = useState(0)
+  const [speed, setSpeed] = useState(1)
   const [avatarState, setAvatarState] = useState<'loading' | 'ready' | 'signing'>('loading')
   const [speechSupported, setSpeechSupported] = useState(false)
   const [isListening, setIsListening] = useState(false)
@@ -250,7 +252,7 @@ export default function Page() {
             <div className="terminal-chrome"><span className="chrome-dot red" /><span className="chrome-dot yellow" /><span className="chrome-dot green" /><span className="terminal-title">yap / render</span></div>
             <div className="terminal-body avatar-terminal-body">
               <div className="avatar-canvas-shell" aria-label="Interactive 3D avatar canvas ready for Indian Sign Language playback">
-                <AvatarPlayer phrase={avatarPhrase} requestId={requestId} model={avatarModel} appendToQueue={liveMode} stopId={stopId} onStateChange={setAvatarState} />
+                <AvatarPlayer phrase={avatarPhrase} requestId={requestId} model={avatarModel} appendToQueue={liveMode} stopId={stopId} resetId={resetId} speed={speed} onStateChange={setAvatarState} />
                 <span className="canvas-badge"><span className="live-dot" /> ISL AVATAR · {avatarState}</span>
                 <div className="avatar-selector" role="group" aria-label="Choose avatar"><span>AVATAR</span><button type="button" className={avatarModel === 'default' ? 'is-selected' : ''} onClick={() => setAvatarModel('default')} aria-pressed={avatarModel === 'default'}>Default</button><button type="button" className={avatarModel === 'human' ? 'is-selected' : ''} onClick={() => setAvatarModel('human')} aria-pressed={avatarModel === 'human'}>Human</button></div>
               </div>
@@ -262,7 +264,7 @@ export default function Page() {
                 </button>
                 <button type="button" onClick={toggleLiveMode} className={liveMode ? 'live-translation is-active' : 'live-translation'} disabled={!speechSupported} title="Continuously convert final speech into ISL"><span /> Live</button>
               </div>
-              <div className="terminal-footer terminal-footer-live"><button type="button" onClick={stopTranslation} className="terminal-play terminal-stop" aria-label="Stop translation"><Square size={11} fill="currentColor" /></button><span>{liveMode ? 'live translation is listening' : avatarState === 'signing' ? 'translation in progress' : avatarState === 'loading' ? 'loading avatar' : 'ready — words or A–Z fingerspelling'}</span><span className="terminal-time">ISL</span></div>
+              <div className="terminal-footer terminal-footer-live"><button type="button" onClick={stopTranslation} className="terminal-play terminal-stop" aria-label="Stop translation"><Square size={11} fill="currentColor" /></button><button type="button" onClick={() => setResetId((c) => c + 1)} className="terminal-play terminal-stop" aria-label="Reset avatar" title="Reset avatar to rest pose" style={{marginLeft: '4px'}}>↺</button><span>{liveMode ? 'live translation is listening' : avatarState === 'signing' ? 'translation in progress' : avatarState === 'loading' ? 'loading avatar' : 'ready — words or A–Z fingerspelling'}</span><label style={{display:'flex',alignItems:'center',gap:'4px',fontSize:'11px',opacity:0.7,marginLeft:'auto'}} title="Animation speed">Speed<input type="range" min="0.5" max="3" step="0.25" value={speed} onChange={(e) => setSpeed(Number(e.target.value))} style={{width:'60px',accentColor:'currentColor'}} />{speed}×</label><span className="terminal-time">ISL</span></div>
               <div className="quick-phrases" aria-label="Try a supported sign">
                 <button type="button" className="quick-phrases-arrow" onClick={() => scrollQuickPhrases(-1)} aria-label="Show previous signs"><ChevronLeft size={15} /></button>
                 <div ref={quickPhrasesRef} className="quick-phrases-track">
