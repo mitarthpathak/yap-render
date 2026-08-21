@@ -75,7 +75,7 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
   useEffect(() => {
     if (!resetId || !readyRef.current) return
     pendingPhraseRef.current = null
-    resetAvatar(runtimeRef.current, model)
+    resetAvatar(runtimeRef.current)
     onStateChange('ready')
   }, [resetId, model, onStateChange])
 
@@ -154,7 +154,7 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
       // Apply the existing default-pose instructions immediately so every new
       // instance starts clean. Keeping those instructions in the frame queue
       // allowed a switch or reset to display an intermediate bone position.
-      resetAvatar(runtime, model)
+      resetAvatar(runtime)
       readyRef.current = true
       const queuedRequest = pendingPhraseRef.current
       if (queuedRequest) {
@@ -260,7 +260,7 @@ function captureRestQuaternions(avatar: THREE.Object3D) {
   })
 }
 
-function resetAvatar(runtime: SignRuntime, model: 'default' | 'human') {
+function resetAvatar(runtime: SignRuntime) {
   const avatar = runtime.avatar
   if (!avatar) return
 
@@ -275,20 +275,20 @@ function resetAvatar(runtime: SignRuntime, model: 'default' | 'human') {
     userData.delta = { x: 0, y: 0, z: 0 }
   })
 
-  // The app's Robot default is authored by defaultPose(). Reuse its existing
-  // instructions, but snap their final state instead of queuing an animation.
-  if (model !== 'human') {
-    defaultPose(runtime)
-    for (const frame of runtime.animations) {
-      for (const [boneName, , axis, target] of frame) {
-        const bone = getAvatarBone(avatar, boneName)
-        if (!bone) continue
-        const userData = bone.userData as BoneUserData
-        const delta = userData.delta ?? (userData.delta = { x: 0, y: 0, z: 0 })
-        delta[axis] = target
-        const deltaQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(delta.x, delta.y, delta.z))
-        bone.quaternion.copy(userData.restQuaternion ? userData.restQuaternion.clone().multiply(deltaQuaternion) : deltaQuaternion)
-      }
+  // Every word table is authored from defaultPose(). Apply that same proven
+  // starting pose to both rigs, then snap it before playback begins. The
+  // human rig has the same bones without the `mixamorig:` prefix, which
+  // getAvatarBone() resolves above.
+  defaultPose(runtime)
+  for (const frame of runtime.animations) {
+    for (const [boneName, , axis, target] of frame) {
+      const bone = getAvatarBone(avatar, boneName)
+      if (!bone) continue
+      const userData = bone.userData as BoneUserData
+      const delta = userData.delta ?? (userData.delta = { x: 0, y: 0, z: 0 })
+      delta[axis] = target
+      const deltaQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(delta.x, delta.y, delta.z))
+      bone.quaternion.copy(userData.restQuaternion ? userData.restQuaternion.clone().multiply(deltaQuaternion) : deltaQuaternion)
     }
   }
   runtime.animations = []
