@@ -12,8 +12,10 @@ import {
   Hand,
   LayoutDashboard,
   LogOut,
+  Maximize2,
   Menu,
   Mic,
+  Minimize2,
   Move3d,
   Play,
   Square,
@@ -75,6 +77,7 @@ export default function Page() {
   const [account, setAccount] = useState<LocalAccount | null>(null)
   const [accountMenuOpen, setAccountMenuOpen] = useState(false)
   const [dashboardOpen, setDashboardOpen] = useState(false)
+  const [isMaximized, setIsMaximized] = useState(false)
   const [aboutOpen, setAboutOpen] = useState(false)
   const recognitionRef = useRef<InstanceType<SpeechRecognitionConstructor> | null>(null)
   const liveModeRef = useRef(false)
@@ -272,7 +275,7 @@ export default function Page() {
         </section>
       </div>}
 
-      <section className="hero section-pad" id="top">
+      <section className={isMaximized ? 'hero section-pad is-demo-maximized' : 'hero section-pad'} id="top">
         <div className="hero-copy reveal">
           <p className="eyebrow"><span className="eyebrow-dot" /> Language, without limits</p>
           <h1 className="hero-title"><span>Say it.</span><span><em>See it.</em></span><span>Share it.</span></h1>
@@ -287,12 +290,40 @@ export default function Page() {
 
         <div className="avatar-stage reveal" id="try-it">
           <div className="terminal-window" aria-label="Yap and Render live translation workspace">
-            <div className="terminal-chrome"><span className="chrome-dot red" /><span className="chrome-dot yellow" /><span className="chrome-dot green" /><span className="terminal-title">yap / render</span></div>
-            <div className="terminal-body avatar-terminal-body">
-              <div className="avatar-canvas-shell" aria-label="Interactive 3D avatar canvas ready for Indian Sign Language playback">
+            <div className="terminal-chrome"><span className="chrome-dot red" /><span className="chrome-dot yellow" /><span className="chrome-dot green" /><span className="terminal-title">yap / render</span><button
+              type="button"
+              className="terminal-maximize-toggle"
+              onClick={() => setIsMaximized((maximized) => !maximized)}
+              aria-label={isMaximized ? 'Restore avatar canvas size' : 'Maximize avatar canvas'}
+              aria-pressed={isMaximized}
+              title={isMaximized ? 'Restore size (Esc)' : 'Maximize canvas'}
+            >
+              {isMaximized ? <Minimize2 size={16} strokeWidth={1.7} /> : <Maximize2 size={16} strokeWidth={1.7} />}
+            </button></div>
+            <div className={isMaximized ? 'terminal-body avatar-terminal-body is-maximized' : 'terminal-body avatar-terminal-body'}>
+              <div className="avatar-workspace">
+              <div
+                className={isMaximized ? 'avatar-canvas-shell is-maximized' : 'avatar-canvas-shell'}
+                aria-label="Interactive 3D avatar canvas ready for Indian Sign Language playback"
+                onTransitionEnd={(event) => {
+                  if (event.propertyName === 'height') window.dispatchEvent(new Event('resize'))
+                }}
+              >
                 <AvatarPlayer phrase={avatarPhrase} requestId={requestId} model={avatarModel} appendToQueue={liveMode} stopId={stopId} resetId={resetId} speed={speed} onStateChange={setAvatarState} />
                 <span className="canvas-badge"><span className="live-dot" /> ISL AVATAR · {avatarState}</span>
                 <div className="avatar-selector" role="group" aria-label="Choose avatar"><span>AVATAR</span><button type="button" className={avatarModel === 'default' ? 'is-selected' : ''} onClick={() => setAvatarModel('default')} aria-pressed={avatarModel === 'default'}>Default</button><button type="button" className={avatarModel === 'human' ? 'is-selected' : ''} onClick={() => setAvatarModel('human')} aria-pressed={avatarModel === 'human'}>Human</button></div>
+              </div>
+              <aside className="avatar-command-panel" aria-label="Avatar playback and sign commands">
+                <div className="avatar-command-input">
+                  <input value={translation} onChange={(event) => setTranslation(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && runTranslation()} aria-label="Text to translate into Indian Sign Language" placeholder="Type a message…" />
+                  <button type="button" onClick={toggleVoiceInput} className={isListening ? 'voice-input is-listening' : 'voice-input'} aria-label={isListening ? 'Stop voice input' : 'Start voice input'} disabled={!speechSupported}>{isListening ? <MicOff size={15} /> : <Mic size={15} />}<span>{isListening ? 'Listening' : 'Voice'}</span></button>
+                  <button type="button" onClick={toggleLiveMode} className={liveMode ? 'live-translation is-active' : 'live-translation'} disabled={!speechSupported}><span /> Live</button>
+                </div>
+                <div className="avatar-command-actions"><button type="button" onClick={stopTranslation} className="terminal-play terminal-stop" aria-label="Stop translation" title="Stop translation"><Square size={11} fill="currentColor" /></button><button type="button" onClick={() => setResetId((c) => c + 1)} className="terminal-play terminal-stop" aria-label="Reset avatar" title="Reset avatar to rest pose"><span aria-hidden="true">↺</span></button><label className="avatar-speed" title="Animation speed">Speed<input type="range" min="0.5" max="3" step="0.25" value={speed} onChange={(e) => setSpeed(Number(e.target.value))} />{speed}×</label></div>
+                <div className="avatar-command-list" aria-label="Try a supported sign">
+                  {quickPhrases.map((word) => <button type="button" key={word} onClick={() => { setTranslation(word); setAvatarPhrase(word); setRequestId((current) => current + 1) }}>{word}</button>)}
+                </div>
+              </aside>
               </div>
               <div className="translator-controls">
                 <input value={translation} onChange={(event) => setTranslation(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && runTranslation()} aria-label="Text to translate into Indian Sign Language" placeholder="Type a message…" />
