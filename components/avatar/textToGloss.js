@@ -10,6 +10,8 @@
  * 6. WH-Question words (WHAT, WHERE, WHY, WHO, WHEN, HOW) placed at the very end
  */
 
+import { getDictionaryGloss } from "./glossDictionary.js";
+
 // Common ISL Idiomatic and Compound Phrases
 const PHRASE_DICTIONARY = {
   "HOW ARE YOU": ["YOU", "HOW"],
@@ -349,6 +351,21 @@ function convertSentenceToGloss(sentence) {
   let expanded = expandContractions(sentence.replace(/[?!.,]/g, " "));
   let rawTokens = expanded.split(/\s+/).filter(w => w.trim().length > 0);
 
+  // Keep multi-word WH terms together even when they appear inside a longer
+  // sentence, e.g. "How many dogs?" -> "DOG HOW_MANY".
+  const mergedTokens = [];
+  for (let index = 0; index < rawTokens.length; index += 1) {
+    const current = rawTokens[index].toLowerCase().replace(/[^a-z]/g, "");
+    const next = rawTokens[index + 1]?.toLowerCase().replace(/[^a-z]/g, "");
+    if (current === "how" && (next === "many" || next === "much")) {
+      mergedTokens.push(`how_${next}`);
+      index += 1;
+    } else {
+      mergedTokens.push(rawTokens[index]);
+    }
+  }
+  rawTokens = mergedTokens;
+
   // A run of individual letters is fingerspelling, not an English sentence.
   // In particular, "a b c d" must retain A: treating it as an article would
   // silently drop a sign that the signer explicitly requested.
@@ -426,9 +443,11 @@ function convertSentenceToGloss(sentence) {
     glossTokens = filtered.map(w => lemmatizeWord(w).toUpperCase());
   }
 
+  const dictionaryTokens = glossTokens.flatMap((token) => getDictionaryGloss(token) || [token]);
+
   return {
-    tokens: glossTokens,
-    text: glossTokens.join(" ")
+    tokens: dictionaryTokens,
+    text: dictionaryTokens.join(" ")
   };
 }
 

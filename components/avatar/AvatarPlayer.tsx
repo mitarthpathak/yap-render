@@ -25,8 +25,8 @@ type AvatarPlayerProps = {
   onStateChange: (state: 'loading' | 'ready' | 'signing') => void
 }
 
-const wordAnimations = words as Record<string, (runtime: SignRuntime) => void>
-const alphabetAnimations = alphabets as Record<string, (runtime: SignRuntime) => void>
+const wordAnimations = words as unknown as Record<string, (runtime: SignRuntime) => void>
+const alphabetAnimations = alphabets as unknown as Record<string, (runtime: SignRuntime) => void>
 
 export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQueue = false, stopId = 0, onStateChange }: AvatarPlayerProps) {
   const mountRef = useRef<HTMLDivElement>(null)
@@ -70,7 +70,7 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
     readyRef.current = false
     onStateChange('loading')
     const scene = new THREE.Scene()
-    scene.background = new THREE.Color('#e4e8df')
+    scene.background = new THREE.Color('#efede7')
     // Keep the avatar framed from head through the hips, including when the
     // canvas becomes wider on desktop. The old close-up was centered on the
     // chest, which cropped the lower body out of the stage.
@@ -141,7 +141,7 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
         const frame = queue[0]
         for (let index = 0; index < frame.length;) {
           const [boneName, action, axis, target, direction] = frame[index]
-          const bone = getAvatarBone(runtime.avatar, boneName)
+          const bone = getAvatarBone(runtime.avatar, boneName, model === 'human')
           if (!bone) {
             frame.splice(index, 1)
             continue
@@ -182,13 +182,16 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
   return <div ref={mountRef} className="avatar-canvas" aria-label="Animated Indian Sign Language avatar" />
 }
 
-function getAvatarBone(avatar: THREE.Object3D, boneName: string) {
+function getAvatarBone(avatar: THREE.Object3D, boneName: string, swapHands = false) {
   // Animation tables use the compact Mixamo form. Asset exporters may store
   // the same bone as `mixamorig:Bone` (YBot) or simply `Bone` (the human avatar).
+  // The Ready Player Me rig is handed opposite to the original sign library,
+  // so only the human model swaps left/right bone targets.
+  const requestedBoneName = swapHands ? swapBoneSide(boneName) : boneName
   const candidates = [
-    boneName,
-    boneName.replace(/^mixamorig/, 'mixamorig:'),
-    boneName.replace(/^mixamorig/, ''),
+    requestedBoneName,
+    requestedBoneName.replace(/^mixamorig/, 'mixamorig:'),
+    requestedBoneName.replace(/^mixamorig/, ''),
   ]
   for (const candidate of candidates) {
     const bone = avatar.getObjectByName(candidate)
@@ -197,9 +200,16 @@ function getAvatarBone(avatar: THREE.Object3D, boneName: string) {
   return undefined
 }
 
+function swapBoneSide(boneName: string) {
+  return boneName
+    .replace(/mixamorigLeft/g, 'mixamorig__TEMP_RIGHT')
+    .replace(/mixamorigRight/g, 'mixamorigLeft')
+    .replace(/mixamorig__TEMP_RIGHT/g, 'mixamorigRight')
+}
+
 function enqueuePhrase(input: string, runtime: SignRuntime, append = false) {
   if (!append) runtime.animations = []
-  const { tokens } = textToGloss(input)
+  const { tokens } = textToGloss(input) as { tokens: string[] }
   for (const token of tokens) {
     const word = token.toUpperCase()
     const wordAnimation = wordAnimations[word]
