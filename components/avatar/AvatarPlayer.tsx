@@ -13,11 +13,13 @@ type SignRuntime = {
   animations: SignInstruction[][]
   characters: string[]
   pending: boolean
+  model?: 'default' | 'human'
   avatar?: THREE.Object3D
 }
 
 type BoneUserData = {
   restQuaternion?: THREE.Quaternion
+  gestureRestQuaternion?: THREE.Quaternion
   restPosition?: THREE.Vector3
   restScale?: THREE.Vector3
   delta?: { x: number; y: number; z: number }
@@ -88,6 +90,7 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
     runtime.characters = []
     runtime.pending = true
     runtime.avatar = undefined
+    runtime.model = model
     readyRef.current = false
     // Changing the avatar must not silently discard the phrase that is
     // already on screen. The old Human branch loaded correctly, but it did
@@ -150,7 +153,7 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
       // compound, non-identity rest rotations, so the delta must be composed
       // onto each bone's own rest quaternion instead of added as raw Euler
       // components (Euler component addition only holds near identity).
-      captureRestQuaternions(avatar)
+      captureRestQuaternions(avatar, model)
       // Apply the existing default-pose instructions immediately so every new
       // instance starts clean. Keeping those instructions in the frame queue
       // allowed a switch or reset to display an intermediate bone position.
@@ -196,7 +199,8 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
           if (inProgress) {
             delta[axis] = resolvedDirection === '+' ? Math.min(value + step, resolvedTarget) : Math.max(value - step, resolvedTarget)
             const deltaQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(delta.x, delta.y, delta.z))
-            bone.quaternion.copy(userData.restQuaternion ? userData.restQuaternion.clone().multiply(deltaQuaternion) : deltaQuaternion)
+            const gestureRest = userData.gestureRestQuaternion || userData.restQuaternion
+            bone.quaternion.copy(gestureRest ? gestureRest.clone().multiply(deltaQuaternion) : deltaQuaternion)
             index += 1
           } else {
             frame.splice(index, 1)
@@ -251,11 +255,22 @@ function getAvatarBone(avatar: THREE.Object3D, boneName: string) {
   return undefined
 }
 
-function captureRestQuaternions(avatar: THREE.Object3D) {
+function captureRestQuaternions(avatar: THREE.Object3D, model: 'default' | 'human') {
   avatar.traverse((child) => {
     if (child.type !== 'Bone') return
     const userData = child.userData as BoneUserData
     userData.restQuaternion = child.quaternion.clone()
+    const compactName = child.name.replace(/^mixamorig:?/, '')
+    const isHumanWrist = model === 'human' && (compactName === 'LeftHand' || compactName === 'RightHand')
+    if (isHumanWrist) {
+      // The human GLB exports both palms facing upwards. Rotate each wrist
+      // toward the body so the palms read as relaxed, inward-facing hands.
+      const inwardTilt = compactName === 'LeftHand' ? Math.PI / 2 : -Math.PI / 2
+      const wristCorrection = new THREE.Quaternion().setFromEuler(new THREE.Euler(0.14, 0, inwardTilt))
+      userData.gestureRestQuaternion = userData.restQuaternion.clone().multiply(wristCorrection)
+    } else {
+      userData.gestureRestQuaternion = userData.restQuaternion.clone()
+    }
     userData.restPosition = child.position.clone()
     userData.restScale = child.scale.clone()
   })
@@ -270,7 +285,7 @@ function resetAvatar(runtime: SignRuntime, model: 'default' | 'human') {
   avatar.traverse((child) => {
     if (child.type !== 'Bone') return
     const userData = child.userData as BoneUserData
-    if (userData.restQuaternion) child.quaternion.copy(userData.restQuaternion)
+    if (userData.gestureRestQuaternion) child.quaternion.copy(userData.gestureRestQuaternion)
     if (userData.restPosition) child.position.copy(userData.restPosition)
     if (userData.restScale) child.scale.copy(userData.restScale)
     userData.delta = { x: 0, y: 0, z: 0 }
@@ -290,7 +305,8 @@ function resetAvatar(runtime: SignRuntime, model: 'default' | 'human') {
       const [resolvedTarget] = resolveInstructionForModel(boneName, axis, target, direction, model)
       delta[axis] = resolvedTarget
       const deltaQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(delta.x, delta.y, delta.z))
-      bone.quaternion.copy(userData.restQuaternion ? userData.restQuaternion.clone().multiply(deltaQuaternion) : deltaQuaternion)
+      const gestureRest = userData.gestureRestQuaternion || userData.restQuaternion
+      bone.quaternion.copy(gestureRest ? gestureRest.clone().multiply(deltaQuaternion) : deltaQuaternion)
     }
   }
   runtime.animations = []
@@ -304,12 +320,15 @@ function resolveInstructionForModel(
   direction: '+' | '-',
   model: 'default' | 'human',
 ): [number, '+' | '-'] {
-  // Brunette's upper-arm Z axes face the opposite way to YBot's. Without
-  // this conversion the left/right arms travel through the back of the torso.
+  // Brunette's upper-arm Z and forearm X axes face the opposite way to
+  // YBot's. Without this conversion the arms travel through the back of the
+  // torso or pull a raised signing hand down instead of up.
   // Keep the authored tables in YBot coordinates and translate only at the
   // human-rig boundary.
-  const isHumanUpperArm = model === 'human' && axis === 'z' && /(?:LeftArm|RightArm)$/.test(boneName)
-  return isHumanUpperArm ? [-target, direction === '+' ? '-' : '+'] : [target, direction]
+  const isHumanUpperArm = axis === 'z' && /(?:LeftArm|RightArm)$/.test(boneName)
+  const isHumanForearm = axis === 'x' && /(?:LeftForeArm|RightForeArm)$/.test(boneName)
+  const needsMirror = model === 'human' && (isHumanUpperArm || isHumanForearm)
+  return needsMirror ? [-target, direction === '+' ? '-' : '+'] : [target, direction]
 }
 
 function enqueuePhrase(input: string, runtime: SignRuntime, append = false) {
