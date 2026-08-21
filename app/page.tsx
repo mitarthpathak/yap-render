@@ -77,11 +77,8 @@ export default function Page() {
   const [account, setAccount] = useState<LocalAccount | null>(null)
   const [accountMenuOpen, setAccountMenuOpen] = useState(false)
   const [dashboardOpen, setDashboardOpen] = useState(false)
-<<<<<<< HEAD
   const [isMaximized, setIsMaximized] = useState(false)
-=======
   const [aboutOpen, setAboutOpen] = useState(false)
->>>>>>> origin/main
   const recognitionRef = useRef<InstanceType<SpeechRecognitionConstructor> | null>(null)
   const liveModeRef = useRef(false)
   const quickPhrasesRef = useRef<HTMLDivElement>(null)
@@ -256,9 +253,6 @@ export default function Page() {
         </section>
       </div>}
 
-<<<<<<< HEAD
-      <section className={isMaximized ? 'hero section-pad is-demo-maximized' : 'hero section-pad'} id="top">
-=======
       {aboutOpen && <div className="auth-backdrop about-backdrop" role="presentation" onMouseDown={() => setAboutOpen(false)}>
         <section className="about-modal" role="dialog" aria-modal="true" aria-labelledby="about-title" onMouseDown={(event) => event.stopPropagation()}>
           <button className="auth-close" onClick={() => setAboutOpen(false)} aria-label="Close About Us dialog"><X size={18} /></button>
@@ -281,8 +275,7 @@ export default function Page() {
         </section>
       </div>}
 
-      <section className="hero section-pad" id="top">
->>>>>>> origin/main
+      <section className={isMaximized ? 'hero section-pad is-demo-maximized' : 'hero section-pad'} id="top">
         <div className="hero-copy reveal">
           <p className="eyebrow"><span className="eyebrow-dot" /> Language, without limits</p>
           <h1 className="hero-title"><span>Say it.</span><span><em>See it.</em></span><span>Share it.</span></h1>
