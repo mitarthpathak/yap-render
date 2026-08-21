@@ -75,7 +75,7 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
   useEffect(() => {
     if (!resetId || !readyRef.current) return
     pendingPhraseRef.current = null
-    resetAvatar(runtimeRef.current)
+    resetAvatar(runtimeRef.current, model)
     onStateChange('ready')
   }, [resetId, model, onStateChange])
 
@@ -154,7 +154,7 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
       // Apply the existing default-pose instructions immediately so every new
       // instance starts clean. Keeping those instructions in the frame queue
       // allowed a switch or reset to display an intermediate bone position.
-      resetAvatar(runtime)
+      resetAvatar(runtime, model)
       readyRef.current = true
       const queuedRequest = pendingPhraseRef.current
       if (queuedRequest) {
@@ -184,6 +184,7 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
           }
           const userData = bone.userData as BoneUserData
           const delta = userData.delta ?? (userData.delta = { x: 0, y: 0, z: 0 })
+          const [resolvedTarget, resolvedDirection] = resolveInstructionForModel(boneName, axis, target, direction, model)
           const value = delta[axis]
           // The original step completed most poses in a few rendered frames.
           // Many signs share a raised-hand preparation pose, so that speed made
@@ -191,9 +192,9 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
           // movements were visible. A smaller step keeps each authored pose
           // readable and makes the transition feel less robotic.
           const step = 0.028 * speedRef.current
-          const inProgress = direction === '+' ? value < target : value > target
+          const inProgress = resolvedDirection === '+' ? value < resolvedTarget : value > resolvedTarget
           if (inProgress) {
-            delta[axis] = direction === '+' ? Math.min(value + step, target) : Math.max(value - step, target)
+            delta[axis] = resolvedDirection === '+' ? Math.min(value + step, resolvedTarget) : Math.max(value - step, resolvedTarget)
             const deltaQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(delta.x, delta.y, delta.z))
             bone.quaternion.copy(userData.restQuaternion ? userData.restQuaternion.clone().multiply(deltaQuaternion) : deltaQuaternion)
             index += 1
@@ -260,7 +261,7 @@ function captureRestQuaternions(avatar: THREE.Object3D) {
   })
 }
 
-function resetAvatar(runtime: SignRuntime) {
+function resetAvatar(runtime: SignRuntime, model: 'default' | 'human') {
   const avatar = runtime.avatar
   if (!avatar) return
 
@@ -281,18 +282,34 @@ function resetAvatar(runtime: SignRuntime) {
   // getAvatarBone() resolves above.
   defaultPose(runtime)
   for (const frame of runtime.animations) {
-    for (const [boneName, , axis, target] of frame) {
+    for (const [boneName, , axis, target, direction] of frame) {
       const bone = getAvatarBone(avatar, boneName)
       if (!bone) continue
       const userData = bone.userData as BoneUserData
       const delta = userData.delta ?? (userData.delta = { x: 0, y: 0, z: 0 })
-      delta[axis] = target
+      const [resolvedTarget] = resolveInstructionForModel(boneName, axis, target, direction, model)
+      delta[axis] = resolvedTarget
       const deltaQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(delta.x, delta.y, delta.z))
       bone.quaternion.copy(userData.restQuaternion ? userData.restQuaternion.clone().multiply(deltaQuaternion) : deltaQuaternion)
     }
   }
   runtime.animations = []
   runtime.characters = []
+}
+
+function resolveInstructionForModel(
+  boneName: string,
+  axis: 'x' | 'y' | 'z',
+  target: number,
+  direction: '+' | '-',
+  model: 'default' | 'human',
+): [number, '+' | '-'] {
+  // Brunette's upper-arm Z axes face the opposite way to YBot's. Without
+  // this conversion the left/right arms travel through the back of the torso.
+  // Keep the authored tables in YBot coordinates and translate only at the
+  // human-rig boundary.
+  const isHumanUpperArm = model === 'human' && axis === 'z' && /(?:LeftArm|RightArm)$/.test(boneName)
+  return isHumanUpperArm ? [-target, direction === '+' ? '-' : '+'] : [target, direction]
 }
 
 function enqueuePhrase(input: string, runtime: SignRuntime, append = false) {
