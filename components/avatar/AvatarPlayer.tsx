@@ -16,6 +16,11 @@ type SignRuntime = {
   avatar?: THREE.Object3D
 }
 
+type BoneUserData = {
+  restQuaternion?: THREE.Quaternion
+  delta?: { x: number; y: number; z: number }
+}
+
 type AvatarPlayerProps = {
   phrase: string
   requestId: number
@@ -68,6 +73,10 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
     runtime.pending = true
     runtime.avatar = undefined
     readyRef.current = false
+    // Changing the avatar must not silently discard the phrase that is
+    // already on screen. The old Human branch loaded correctly, but it did
+    // not replay the current request after the new GLB finished loading.
+    pendingPhraseRef.current = requestId ? { phrase, requestId } : null
     onStateChange('loading')
     const scene = new THREE.Scene()
     scene.background = new THREE.Color('#efede7')
@@ -118,7 +127,18 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
       // above the canvas centre instead of against the top edge.
       avatar.position.y = -0.85
       scene.add(avatar)
-      defaultPose(runtime)
+      // Animation tables author each gesture as a delta rotation from rest.
+      // YBot's rig ships in a pure identity T-pose, so writing that delta
+      // straight onto rotation.xyz happens to be correct. The human rig's
+      // rest pose is a real posed skeleton (arms down, fingers relaxed) with
+      // compound, non-identity rest rotations, so the delta must be composed
+      // onto each bone's own rest quaternion instead of added as raw Euler
+      // components (Euler component addition only holds near identity).
+      captureRestQuaternions(avatar)
+      // YBot ships in a neutral T-pose and needs the shared pose setup. The
+      // human avatar is already authored in a relaxed arms-down pose; applying
+      // YBot's pose to it pushes both arms out horizontally.
+      if (model !== 'human') defaultPose(runtime)
       readyRef.current = true
       const queuedRequest = pendingPhraseRef.current
       if (queuedRequest) {
@@ -140,17 +160,21 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
         wasSigning = true
         const frame = queue[0]
         for (let index = 0; index < frame.length;) {
-          const [boneName, action, axis, target, direction] = frame[index]
-          const bone = getAvatarBone(runtime.avatar, boneName, model === 'human')
+          const [boneName, , axis, target, direction] = frame[index]
+          const bone = getAvatarBone(runtime.avatar, boneName)
           if (!bone) {
             frame.splice(index, 1)
             continue
           }
-          const value = bone[action][axis] as number
+          const userData = bone.userData as BoneUserData
+          const delta = userData.delta ?? (userData.delta = { x: 0, y: 0, z: 0 })
+          const value = delta[axis]
           const step = 0.075
           const inProgress = direction === '+' ? value < target : value > target
           if (inProgress) {
-            bone[action][axis] = direction === '+' ? Math.min(value + step, target) : Math.max(value - step, target)
+            delta[axis] = direction === '+' ? Math.min(value + step, target) : Math.max(value - step, target)
+            const deltaQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(delta.x, delta.y, delta.z))
+            bone.quaternion.copy(userData.restQuaternion ? userData.restQuaternion.clone().multiply(deltaQuaternion) : deltaQuaternion)
             index += 1
           } else {
             frame.splice(index, 1)
@@ -182,29 +206,32 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
   return <div ref={mountRef} className="avatar-canvas" aria-label="Animated Indian Sign Language avatar" />
 }
 
-function getAvatarBone(avatar: THREE.Object3D, boneName: string, swapHands = false) {
-  // Animation tables use the compact Mixamo form. Asset exporters may store
-  // the same bone as `mixamorig:Bone` (YBot) or simply `Bone` (the human avatar).
-  // The Ready Player Me rig is handed opposite to the original sign library,
-  // so only the human model swaps left/right bone targets.
-  const requestedBoneName = swapHands ? swapBoneSide(boneName) : boneName
-  const candidates = [
-    requestedBoneName,
-    requestedBoneName.replace(/^mixamorig/, 'mixamorig:'),
-    requestedBoneName.replace(/^mixamorig/, ''),
-  ]
+function getAvatarBone(avatar: THREE.Object3D, boneName: string) {
+  // Animation tables use compact Mixamo names. YBot stores
+  // `mixamorig:RightArm`; the Ready Player Me human stores `RightArm`.
+  // Resolve both forms (and armature-prefixed exporter variants) so the same
+  // proven animation files work for both avatars.
+  const compact = boneName.replace(/^mixamorig:?/, '')
+  const candidates = [boneName, `mixamorig:${compact}`, compact]
   for (const candidate of candidates) {
     const bone = avatar.getObjectByName(candidate)
     if (bone) return bone
   }
+  let resolved: THREE.Object3D | undefined
+  avatar.traverse((child) => {
+    if (resolved || child.type !== 'Bone') return
+    const normalized = child.name.split('|').pop()?.replace(/^mixamorig:?/, '')
+    if (normalized === compact) resolved = child
+  })
+  if (resolved) return resolved
   return undefined
 }
 
-function swapBoneSide(boneName: string) {
-  return boneName
-    .replace(/mixamorigLeft/g, 'mixamorig__TEMP_RIGHT')
-    .replace(/mixamorigRight/g, 'mixamorigLeft')
-    .replace(/mixamorig__TEMP_RIGHT/g, 'mixamorigRight')
+function captureRestQuaternions(avatar: THREE.Object3D) {
+  avatar.traverse((child) => {
+    if (child.type !== 'Bone') return
+    ;(child.userData as BoneUserData).restQuaternion = child.quaternion.clone()
+  })
 }
 
 function enqueuePhrase(input: string, runtime: SignRuntime, append = false) {
