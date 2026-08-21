@@ -49,6 +49,7 @@ export default function Page() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [translation, setTranslation] = useState('YOU HOME')
   const [avatarPhrase, setAvatarPhrase] = useState('YOU HOME')
+  const [avatarModel, setAvatarModel] = useState<'default' | 'human'>('default')
   const [requestId, setRequestId] = useState(0)
   const [stopId, setStopId] = useState(0)
   const [avatarState, setAvatarState] = useState<'loading' | 'ready' | 'signing'>('loading')
@@ -225,12 +226,13 @@ export default function Page() {
       <section className="hero section-pad" id="top">
         <div className="hero-copy reveal">
           <p className="eyebrow"><span className="eyebrow-dot" /> Language, without limits</p>
-          <h1>Say it.<br /><em>See it.</em><br />Share it.</h1>
+          <h1 className="hero-title"><span>Say it.</span><span><em>See it.</em></span><span>Share it.</span></h1>
           <p className="hero-lede">Yap & Render translates spoken language into Indian Sign Language, so more people can be part of the conversation.</p>
           <div className="hero-actions">
             <a className="button button-dark" href="#try-it">See it in action <ArrowDownRight size={17} /></a>
             <a className="text-link" href="#how-it-works">Explore the idea <ArrowRight size={15} /></a>
           </div>
+          <div className="hero-highlights" aria-label="Yap and Render highlights"><span>ISL-first</span><span>Real-time signs</span><span>Human connection</span></div>
           <p className="hero-note"><Sparkles size={14} /> Built with and for the Indian Deaf community</p>
         </div>
 
@@ -239,8 +241,9 @@ export default function Page() {
             <div className="terminal-chrome"><span className="chrome-dot red" /><span className="chrome-dot yellow" /><span className="chrome-dot green" /><span className="terminal-title">yap / render</span></div>
             <div className="terminal-body avatar-terminal-body">
               <div className="avatar-canvas-shell" aria-label="Interactive 3D avatar canvas ready for Indian Sign Language playback">
-                <AvatarPlayer phrase={avatarPhrase} requestId={requestId} appendToQueue={liveMode} stopId={stopId} onStateChange={setAvatarState} />
+                <AvatarPlayer phrase={avatarPhrase} requestId={requestId} model={avatarModel} appendToQueue={liveMode} stopId={stopId} onStateChange={setAvatarState} />
                 <span className="canvas-badge"><span className="live-dot" /> ISL AVATAR · {avatarState}</span>
+                <div className="avatar-selector" role="group" aria-label="Choose avatar"><span>AVATAR</span><button type="button" className={avatarModel === 'default' ? 'is-selected' : ''} onClick={() => setAvatarModel('default')} aria-pressed={avatarModel === 'default'}>Default</button><button type="button" className={avatarModel === 'human' ? 'is-selected' : ''} onClick={() => setAvatarModel('human')} aria-pressed={avatarModel === 'human'}>Human</button></div>
               </div>
               <div className="translator-controls">
                 <input value={translation} onChange={(event) => setTranslation(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && runTranslation()} aria-label="Text to translate into Indian Sign Language" placeholder="Type a message…" />
@@ -274,7 +277,7 @@ export default function Page() {
 
       <section className="proof-band reveal"><div><strong>01</strong><span>shared language</span></div><div><strong>∞</strong><span>possibilities to connect</span></div><div><strong>100%</strong><span>human at the centre</span></div></section>
 
-      <section className="final-cta section-pad reveal" id="about"><div className="cta-symbol"><AudioLines size={28} /></div><p className="eyebrow">A more connected future</p><h2>Let&apos;s make room<br />for <em>every voice.</em></h2><p>We&apos;re early, curious, and building in the open.</p><a className="button button-coral" href="mailto:hello@yapandrender.com">Say hello <ArrowRight size={17} /></a></section>
+      <section className="final-cta section-pad reveal" id="about"><div className="cta-symbol"><AudioLines size={28} /></div><p className="eyebrow">A more connected future</p><h2>Let&apos;s make room<br />for <em>every voice.</em></h2><p>We&apos;re early, curious, and building in the open.</p><a className="button button-coral" href="mailto:mpathak6207@gmail.com?subject=Yap%20%26%20Render%20hello">Say hello <ArrowRight size={17} /></a></section>
 
       <footer className="footer"><a className="brand" href="#top" aria-label="Yap and Render home"><span className="brand-mark"><img src="/yap-render-logo-mark.png" alt="" /></span><span>yap &amp; render</span></a><span>Made for more ways to connect.</span><span>© 2026 Yap & Render</span></footer>
     </main>
