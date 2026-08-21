@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
@@ -18,6 +18,8 @@ type SignRuntime = {
 
 type BoneUserData = {
   restQuaternion?: THREE.Quaternion
+  restPosition?: THREE.Vector3
+  restScale?: THREE.Vector3
   delta?: { x: number; y: number; z: number }
 }
 
@@ -27,40 +29,29 @@ type AvatarPlayerProps = {
   model?: 'default' | 'human'
   appendToQueue?: boolean
   stopId?: number
+  resetId?: number
+  speed?: number
   onStateChange: (state: 'loading' | 'ready' | 'signing') => void
 }
 
 const wordAnimations = words as unknown as Record<string, (runtime: SignRuntime) => void>
 const alphabetAnimations = alphabets as unknown as Record<string, (runtime: SignRuntime) => void>
 
-// Real wrists/elbows/shoulders stop well short of the stylised angles the
-// gloss tables use on the robotic YBot rig. On the human mesh, the same raw
-// target rotated a joint past what a real arm can do, which is what folded
-// the wrist backwards and made the forearm twist unnaturally. Clamp each
-// joint family to a generous but anatomically plausible range instead.
-const HUMAN_JOINT_LIMIT_RAD: { suffix: string; limit: number }[] = [
-  { suffix: 'Hand', limit: Math.PI / 3 }, // wrist: ~60°
-  { suffix: 'ForeArm', limit: Math.PI / 2.4 }, // elbow: ~75°
-  { suffix: 'Arm', limit: Math.PI * 0.6 }, // shoulder: ~108°
-]
-
-function humanJointLimit(compactBoneName: string): number | null {
-  for (const { suffix, limit } of HUMAN_JOINT_LIMIT_RAD) {
-    if (compactBoneName.endsWith(suffix)) return limit
-  }
-  return null
-}
-
-export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQueue = false, stopId = 0, onStateChange }: AvatarPlayerProps) {
+export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQueue = false, stopId = 0, resetId = 0, speed = 1, onStateChange }: AvatarPlayerProps) {
   const mountRef = useRef<HTMLDivElement>(null)
   const runtimeRef = useRef<SignRuntime>({ animations: [], characters: [], pending: true })
   const readyRef = useRef(false)
   const pendingPhraseRef = useRef<{ phrase: string; requestId: number } | null>(null)
   const appendToQueueRef = useRef(appendToQueue)
+  const speedRef = useRef(speed)
 
   useEffect(() => {
     appendToQueueRef.current = appendToQueue
   }, [appendToQueue])
+
+  useEffect(() => {
+    speedRef.current = speed
+  }, [speed])
 
   useEffect(() => {
     if (!requestId) return
@@ -80,6 +71,13 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
     runtimeRef.current.animations = []
     onStateChange('ready')
   }, [stopId, onStateChange])
+
+  useEffect(() => {
+    if (!resetId || !readyRef.current) return
+    pendingPhraseRef.current = null
+    resetAvatar(runtimeRef.current, model)
+    onStateChange('ready')
+  }, [resetId, model, onStateChange])
 
   useEffect(() => {
     const mount = mountRef.current
@@ -153,10 +151,10 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
       // onto each bone's own rest quaternion instead of added as raw Euler
       // components (Euler component addition only holds near identity).
       captureRestQuaternions(avatar)
-      // YBot ships in a neutral T-pose and needs the shared pose setup. The
-      // human avatar is already authored in a relaxed arms-down pose; applying
-      // YBot's pose to it pushes both arms out horizontally.
-      if (model !== 'human') defaultPose(runtime)
+      // Apply the existing default-pose instructions immediately so every new
+      // instance starts clean. Keeping those instructions in the frame queue
+      // allowed a switch or reset to display an intermediate bone position.
+      resetAvatar(runtime, model)
       readyRef.current = true
       const queuedRequest = pendingPhraseRef.current
       if (queuedRequest) {
@@ -178,21 +176,25 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
         wasSigning = true
         const frame = queue[0]
         for (let index = 0; index < frame.length;) {
-          const [boneName, , axis, rawTarget, direction] = frame[index]
+          const [boneName, , axis, target, direction] = frame[index]
           const bone = getAvatarBone(runtime.avatar, boneName)
           if (!bone) {
             frame.splice(index, 1)
             continue
           }
-          const limit = model === 'human' ? humanJointLimit(boneName.replace(/^mixamorig:?/, '')) : null
-          const target = limit !== null ? Math.max(-limit, Math.min(limit, rawTarget)) : rawTarget
           const userData = bone.userData as BoneUserData
           const delta = userData.delta ?? (userData.delta = { x: 0, y: 0, z: 0 })
+          const [resolvedTarget, resolvedDirection] = resolveInstructionForModel(boneName, axis, target, direction, model)
           const value = delta[axis]
-          const step = 0.075
-          const inProgress = direction === '+' ? value < target : value > target
+          // The original step completed most poses in a few rendered frames.
+          // Many signs share a raised-hand preparation pose, so that speed made
+          // different signs look identical before their distinct hand/path
+          // movements were visible. A smaller step keeps each authored pose
+          // readable and makes the transition feel less robotic.
+          const step = 0.028 * speedRef.current
+          const inProgress = resolvedDirection === '+' ? value < resolvedTarget : value > resolvedTarget
           if (inProgress) {
-            delta[axis] = direction === '+' ? Math.min(value + step, target) : Math.max(value - step, target)
+            delta[axis] = resolvedDirection === '+' ? Math.min(value + step, resolvedTarget) : Math.max(value - step, resolvedTarget)
             const deltaQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(delta.x, delta.y, delta.z))
             bone.quaternion.copy(userData.restQuaternion ? userData.restQuaternion.clone().multiply(deltaQuaternion) : deltaQuaternion)
             index += 1
@@ -202,7 +204,9 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
         }
         if (!frame.length) {
           queue.shift()
-          nextFrameAt = now + 230
+          // Hold each authored key pose long enough for the user to perceive
+          // the sign's movement before progressing to the next one.
+          nextFrameAt = now + 360 / speedRef.current
         }
       }
       if (wasSigning && !queue.length) {
@@ -250,13 +254,81 @@ function getAvatarBone(avatar: THREE.Object3D, boneName: string) {
 function captureRestQuaternions(avatar: THREE.Object3D) {
   avatar.traverse((child) => {
     if (child.type !== 'Bone') return
-    ;(child.userData as BoneUserData).restQuaternion = child.quaternion.clone()
+    const userData = child.userData as BoneUserData
+    userData.restQuaternion = child.quaternion.clone()
+    userData.restPosition = child.position.clone()
+    userData.restScale = child.scale.clone()
   })
+}
+
+function resetAvatar(runtime: SignRuntime, model: 'default' | 'human') {
+  const avatar = runtime.avatar
+  if (!avatar) return
+
+  runtime.animations = []
+  runtime.characters = []
+  avatar.traverse((child) => {
+    if (child.type !== 'Bone') return
+    const userData = child.userData as BoneUserData
+    if (userData.restQuaternion) child.quaternion.copy(userData.restQuaternion)
+    if (userData.restPosition) child.position.copy(userData.restPosition)
+    if (userData.restScale) child.scale.copy(userData.restScale)
+    userData.delta = { x: 0, y: 0, z: 0 }
+  })
+
+  // Every word table is authored from defaultPose(). Apply that same proven
+  // starting pose to both rigs, then snap it before playback begins. The
+  // human rig has the same bones without the `mixamorig:` prefix, which
+  // getAvatarBone() resolves above.
+  defaultPose(runtime)
+  for (const frame of runtime.animations) {
+    for (const [boneName, , axis, target, direction] of frame) {
+      const bone = getAvatarBone(avatar, boneName)
+      if (!bone) continue
+      const userData = bone.userData as BoneUserData
+      const delta = userData.delta ?? (userData.delta = { x: 0, y: 0, z: 0 })
+      const [resolvedTarget] = resolveInstructionForModel(boneName, axis, target, direction, model)
+      delta[axis] = resolvedTarget
+      const deltaQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(delta.x, delta.y, delta.z))
+      bone.quaternion.copy(userData.restQuaternion ? userData.restQuaternion.clone().multiply(deltaQuaternion) : deltaQuaternion)
+    }
+  }
+  runtime.animations = []
+  runtime.characters = []
+}
+
+function resolveInstructionForModel(
+  boneName: string,
+  axis: 'x' | 'y' | 'z',
+  target: number,
+  direction: '+' | '-',
+  model: 'default' | 'human',
+): [number, '+' | '-'] {
+  // Brunette's upper-arm Z axes face the opposite way to YBot's. Without
+  // this conversion the left/right arms travel through the back of the torso.
+  // Keep the authored tables in YBot coordinates and translate only at the
+  // human-rig boundary.
+  const isHumanUpperArm = model === 'human' && axis === 'z' && /(?:LeftArm|RightArm)$/.test(boneName)
+  return isHumanUpperArm ? [-target, direction === '+' ? '-' : '+'] : [target, direction]
 }
 
 function enqueuePhrase(input: string, runtime: SignRuntime, append = false) {
   if (!append) runtime.animations = []
   const { tokens } = textToGloss(input) as { tokens: string[] }
+  
+  const queueNames = tokens.map(token => {
+    const word = token.toUpperCase()
+    if (word in wordAnimations) {
+      // Find the action ID in SUPPORTED_SIGNS if possible, fallback to clip_name
+      return `clip_${word.toLowerCase().replace(' ', '')}`
+    }
+    return token
+  })
+
+  console.log(`Input:\n${input}`)
+  console.log(`Detected:\n${tokens.join(' ΓåÆ ')}`)
+  console.log(`Animation queue:\n${queueNames.join(' ΓåÆ ')}`)
+
   for (const token of tokens) {
     const word = token.toUpperCase()
     const wordAnimation = wordAnimations[word]

@@ -12,6 +12,94 @@
 
 import { getDictionaryGloss } from "./glossDictionary.js";
 
+// The translator, voice input, quick controls and animation queue all share
+// these canonical gloss tokens.  The action IDs are deliberately UI/debug
+// metadata: AvatarPlayer resolves the matching uppercase token to its existing
+// procedural gesture function.
+export const SUPPORTED_SIGNS = Object.freeze({
+  you: { token: "YOU", actionId: "clip_you", label: "YOU" },
+  home: { token: "HOME", actionId: "clip_home", label: "HOME" },
+  time: { token: "TIME", actionId: "clip_time", label: "TIME" },
+  person: { token: "PERSON", actionId: "clip_person", label: "PERSON" },
+  hello: { token: "HELLO", actionId: "clip_hello", label: "HELLO" },
+  help: { token: "HELP", actionId: "clip_help", label: "HELP" },
+  please: { token: "PLEASE", actionId: "clip_please", label: "PLEASE" },
+  sorry: { token: "SORRY", actionId: "clip_sorry", label: "SORRY" },
+  welcome: { token: "WELCOME", actionId: "clip_welcome", label: "WELCOME" },
+  good: { token: "GOOD", actionId: "clip_good", label: "GOOD" },
+  bad: { token: "BAD", actionId: "clip_bad", label: "BAD" },
+  stop: { token: "STOP", actionId: "clip_stop", label: "STOP" },
+  wait: { token: "WAIT", actionId: "clip_wait", label: "WAIT" },
+  come: { token: "COME", actionId: "clip_come", label: "COME" },
+  go: { token: "GO", actionId: "clip_go", label: "GO" },
+  want: { token: "WANT", actionId: "clip_want", label: "WANT" },
+  need: { token: "NEED", actionId: "clip_need", label: "NEED" },
+  like: { token: "LIKE", actionId: "clip_like", label: "LIKE" },
+  know: { token: "KNOW", actionId: "clip_know", label: "KNOW" },
+  understand: { token: "UNDERSTAND", actionId: "clip_understand", label: "UNDERSTAND" },
+  ask: { token: "ASK", actionId: "clip_ask", label: "ASK" },
+  drink: { token: "DRINK", actionId: "clip_drink", label: "DRINK" },
+  eat: { token: "EAT", actionId: "clip_eat", label: "EAT" },
+  water: { token: "WATER", actionId: "clip_water", label: "WATER" },
+  give: { token: "GIVE", actionId: "clip_give", label: "GIVE" },
+  take: { token: "TAKE", actionId: "clip_take", label: "TAKE" },
+  show: { token: "SHOW", actionId: "clip_show", label: "SHOW" },
+  look: { token: "LOOK", actionId: "clip_look", label: "LOOK" },
+  see: { token: "SEE", actionId: "clip_see", label: "SEE" },
+  listen: { token: "LISTEN", actionId: "clip_listen", label: "LISTEN" },
+  talk: { token: "TALK", actionId: "clip_talk", label: "TALK" },
+  start: { token: "START", actionId: "clip_start", label: "START" },
+  finish: { token: "FINISH", actionId: "clip_finish", label: "FINISH" },
+  again: { token: "AGAIN", actionId: "clip_again", label: "AGAIN" },
+  sleep: { token: "SLEEP", actionId: "clip_sleep", label: "SLEEP" },
+  toilet: { token: "TOILET", actionId: "clip_toilet", label: "TOILET" },
+  doctor: { token: "DOCTOR", actionId: "clip_doctor", label: "DOCTOR" },
+  hospital: { token: "HOSPITAL", actionId: "clip_hospital", label: "HOSPITAL" },
+  pain: { token: "PAIN", actionId: "clip_pain", label: "PAIN" },
+  school: { token: "SCHOOL", actionId: "clip_school", label: "SCHOOL" },
+  class: { token: "CLASS", actionId: "clip_class", label: "CLASS" },
+  teacher: { token: "TEACHER", actionId: "clip_teacher", label: "TEACHER" },
+  student: { token: "STUDENT", actionId: "clip_student", label: "STUDENT" },
+  book: { token: "BOOK", actionId: "clip_book", label: "BOOK" },
+  "thank you": { token: "THANK_YOU", actionId: "clip_thankyou", label: "THANK YOU" },
+  thankyou: { token: "THANK_YOU", actionId: "clip_thankyou", label: "THANK YOU" },
+  thanks: { token: "THANK_YOU", actionId: "clip_thankyou", label: "THANK YOU" },
+  yes: { token: "YES", actionId: "clip_yes", label: "YES" },
+  no: { token: "NO", actionId: "clip_no", label: "NO" },
+});
+
+const SIGN_PHRASES = Object.keys(SUPPORTED_SIGNS).sort((left, right) => right.length - left.length);
+
+export function getActionIdForGloss(token) {
+  return Object.values(SUPPORTED_SIGNS).find((sign) => sign.token === token)?.actionId || null;
+}
+
+// Capture known signs in the order the speaker supplied them. It runs before
+// grammar reordering so conversational inputs such as "Hello, I need help"
+// reliably play HELLO followed by HELP. If no supported sign is present, the
+// established glossary/fingerspelling path below remains untouched.
+function detectSupportedSigns(sentence) {
+  const normalized = sentence.toLowerCase().replace(/[^a-z]+/g, " ").trim();
+  if (!normalized) return [];
+  const tokens = [];
+  let cursor = 0;
+  while (cursor < normalized.length) {
+    let found = null;
+    for (const phrase of SIGN_PHRASES) {
+      const start = normalized.indexOf(phrase, cursor);
+      if (start < 0) continue;
+      const before = start === 0 || normalized[start - 1] === " ";
+      const end = start + phrase.length;
+      const after = end === normalized.length || normalized[end] === " ";
+      if (before && after && (!found || start < found.start)) found = { phrase, start, end };
+    }
+    if (!found) break;
+    tokens.push(SUPPORTED_SIGNS[found.phrase].token);
+    cursor = found.end;
+  }
+  return tokens;
+}
+
 // Common ISL Idiomatic and Compound Phrases
 const PHRASE_DICTIONARY = {
   "HOW ARE YOU": ["YOU", "HOW"],
@@ -338,6 +426,11 @@ function classifyToken(token) {
  */
 function convertSentenceToGloss(sentence) {
   let cleanSentence = sentence.trim().toUpperCase().replace(/[.,!]/g, "");
+
+  const detectedSigns = detectSupportedSigns(sentence);
+  if (detectedSigns.length > 0) {
+    return { tokens: detectedSigns, text: detectedSigns.join(" ") };
+  }
 
   // 1. Check direct phrase match
   if (PHRASE_DICTIONARY[cleanSentence]) {
