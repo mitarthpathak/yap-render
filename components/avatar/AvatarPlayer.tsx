@@ -18,7 +18,6 @@ type SignRuntime = {
 
 type BoneUserData = {
   restQuaternion?: THREE.Quaternion
-  restWorldQuaternion?: THREE.Quaternion
   delta?: { x: number; y: number; z: number }
 }
 
@@ -33,6 +32,24 @@ type AvatarPlayerProps = {
 
 const wordAnimations = words as unknown as Record<string, (runtime: SignRuntime) => void>
 const alphabetAnimations = alphabets as unknown as Record<string, (runtime: SignRuntime) => void>
+
+// Real wrists/elbows/shoulders stop well short of the stylised angles the
+// gloss tables use on the robotic YBot rig. On the human mesh, the same raw
+// target rotated a joint past what a real arm can do, which is what folded
+// the wrist backwards and made the forearm twist unnaturally. Clamp each
+// joint family to a generous but anatomically plausible range instead.
+const HUMAN_JOINT_LIMIT_RAD: { suffix: string; limit: number }[] = [
+  { suffix: 'Hand', limit: Math.PI / 3 }, // wrist: ~60°
+  { suffix: 'ForeArm', limit: Math.PI / 2.4 }, // elbow: ~75°
+  { suffix: 'Arm', limit: Math.PI * 0.6 }, // shoulder: ~108°
+]
+
+function humanJointLimit(compactBoneName: string): number | null {
+  for (const { suffix, limit } of HUMAN_JOINT_LIMIT_RAD) {
+    if (compactBoneName.endsWith(suffix)) return limit
+  }
+  return null
+}
 
 export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQueue = false, stopId = 0, onStateChange }: AvatarPlayerProps) {
   const mountRef = useRef<HTMLDivElement>(null)
@@ -115,84 +132,41 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
 
     let disposed = false
     const loader = new GLTFLoader()
-
-    // The human GLB (a Mixamo-rigged Ready Player Me avatar) shares YBot's
-    // exact bone hierarchy and names, but its own rest pose is a real posed
-    // skeleton (arms relaxed at the sides, elbows bent) with non-identity
-    // local rotations, unlike YBot's identity T-pose. The word/letter tables
-    // were tuned by eye against YBot's identity rig, so writing that same
-    // Euler delta straight onto the human rig's own (differently rotated)
-    // local axes bends every joint in the wrong real-world direction — worst
-    // at the wrist, since it sits at the end of the whole misaligned arm
-    // chain and also never received YBot's baseline "arms raised to signing
-    // height" pose (that step was skipped for human to avoid the arms
-    // popping out sideways).
-    //
-    // Fix: always drive an invisible YBot skeleton with the proven deltas,
-    // unchanged. Every frame, for each bone, read how far it has rotated
-    // from ITS OWN rest *in world space*, then re-apply that same
-    // world-space offset on top of the display avatar's own rest. A
-    // world-space offset carries no assumption about a bone's local axis
-    // convention, so the same gesture reproduces correctly no matter how
-    // the display rig's rest pose is oriented.
-    let driverAvatar: THREE.Object3D | undefined
-    let displayAvatar: THREE.Object3D | undefined
-    let boneMap: Map<THREE.Object3D, THREE.Object3D> | null = null
-    let staticParentWorldQuat: Map<THREE.Object3D, THREE.Quaternion> | null = null
-
-    const setupDisplayAvatar = (avatar: THREE.Object3D) => {
+    const modelPath = model === 'human' ? '/models/brunette.glb' : '/models/ybot.glb'
+    loader.load(modelPath, (gltf) => {
+      if (disposed) return
+      const avatar = gltf.scene
       avatar.traverse((child) => {
         child.castShadow = true
         child.frustumCulled = false
       })
+      runtime.avatar = avatar
       // Preserve the requested close framing, while placing the face just
       // above the canvas centre instead of against the top edge.
       avatar.position.y = -0.85
       scene.add(avatar)
-    }
-
-    ;(async () => {
-      try {
-        if (model === 'human') {
-          const [humanGltf, ybotGltf] = await Promise.all([
-            loader.loadAsync('/models/brunette.glb'),
-            loader.loadAsync('/models/ybot.glb'),
-          ])
-          if (disposed) return
-          displayAvatar = humanGltf.scene
-          driverAvatar = ybotGltf.scene
-          setupDisplayAvatar(displayAvatar)
-          captureRestQuaternions(driverAvatar)
-          captureRestWorldQuaternions(driverAvatar)
-          captureRestWorldQuaternions(displayAvatar)
-          boneMap = buildBoneCorrespondence(driverAvatar, displayAvatar)
-          staticParentWorldQuat = buildStaticParentMap(displayAvatar)
-        } else {
-          const gltf = await loader.loadAsync('/models/ybot.glb')
-          if (disposed) return
-          displayAvatar = gltf.scene
-          driverAvatar = gltf.scene
-          setupDisplayAvatar(displayAvatar)
-          captureRestQuaternions(driverAvatar)
-        }
-        runtime.avatar = driverAvatar
-        // Both rigs are now driven by the same identity-rest YBot skeleton,
-        // so both need the same baseline pose before any word/letter deltas
-        // layer on top of it.
-        defaultPose(runtime)
-        readyRef.current = true
-        const queuedRequest = pendingPhraseRef.current
-        if (queuedRequest) {
-          pendingPhraseRef.current = null
-          enqueuePhrase(queuedRequest.phrase, runtime, appendToQueueRef.current)
-          onStateChange('signing')
-        } else {
-          onStateChange('ready')
-        }
-      } catch {
+      // Animation tables author each gesture as a delta rotation from rest.
+      // YBot's rig ships in a pure identity T-pose, so writing that delta
+      // straight onto rotation.xyz happens to be correct. The human rig's
+      // rest pose is a real posed skeleton (arms down, fingers relaxed) with
+      // compound, non-identity rest rotations, so the delta must be composed
+      // onto each bone's own rest quaternion instead of added as raw Euler
+      // components (Euler component addition only holds near identity).
+      captureRestQuaternions(avatar)
+      // YBot ships in a neutral T-pose and needs the shared pose setup. The
+      // human avatar is already authored in a relaxed arms-down pose; applying
+      // YBot's pose to it pushes both arms out horizontally.
+      if (model !== 'human') defaultPose(runtime)
+      readyRef.current = true
+      const queuedRequest = pendingPhraseRef.current
+      if (queuedRequest) {
+        pendingPhraseRef.current = null
+        enqueuePhrase(queuedRequest.phrase, runtime, appendToQueueRef.current)
+        onStateChange('signing')
+      } else {
         onStateChange('ready')
       }
-    })()
+    }, undefined, () => onStateChange('ready'))
 
     let animationFrame = 0
     let nextFrameAt = 0
@@ -200,16 +174,18 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
     const animate = (now: number) => {
       animationFrame = requestAnimationFrame(animate)
       const queue = runtime.animations
-      if (driverAvatar && queue.length && now >= nextFrameAt) {
+      if (runtime.avatar && queue.length && now >= nextFrameAt) {
         wasSigning = true
         const frame = queue[0]
         for (let index = 0; index < frame.length;) {
-          const [boneName, , axis, target, direction] = frame[index]
-          const bone = getAvatarBone(driverAvatar, boneName)
+          const [boneName, , axis, rawTarget, direction] = frame[index]
+          const bone = getAvatarBone(runtime.avatar, boneName)
           if (!bone) {
             frame.splice(index, 1)
             continue
           }
+          const limit = model === 'human' ? humanJointLimit(boneName.replace(/^mixamorig:?/, '')) : null
+          const target = limit !== null ? Math.max(-limit, Math.min(limit, rawTarget)) : rawTarget
           const userData = bone.userData as BoneUserData
           const delta = userData.delta ?? (userData.delta = { x: 0, y: 0, z: 0 })
           const value = delta[axis]
@@ -228,9 +204,6 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
           queue.shift()
           nextFrameAt = now + 230
         }
-      }
-      if (driverAvatar && displayAvatar && driverAvatar !== displayAvatar && boneMap && staticParentWorldQuat) {
-        applyRetarget(driverAvatar, boneMap, staticParentWorldQuat)
       }
       if (wasSigning && !queue.length) {
         wasSigning = false
@@ -278,80 +251,6 @@ function captureRestQuaternions(avatar: THREE.Object3D) {
   avatar.traverse((child) => {
     if (child.type !== 'Bone') return
     ;(child.userData as BoneUserData).restQuaternion = child.quaternion.clone()
-  })
-}
-
-function captureRestWorldQuaternions(avatar: THREE.Object3D) {
-  avatar.updateMatrixWorld(true)
-  avatar.traverse((child) => {
-    if (child.type !== 'Bone') return
-    ;(child.userData as BoneUserData).restWorldQuaternion = child.getWorldQuaternion(new THREE.Quaternion())
-  })
-}
-
-// Maps every driver (YBot) bone to the same-named bone on the display
-// avatar. Both rigs share identical Mixamo bone names and parent structure,
-// so this is a 1:1 correspondence wherever the display rig has a matching
-// bone (extras like eye bones simply have no counterpart and stay at rest).
-function buildBoneCorrespondence(driverAvatar: THREE.Object3D, displayAvatar: THREE.Object3D) {
-  const map = new Map<THREE.Object3D, THREE.Object3D>()
-  driverAvatar.traverse((driverBone) => {
-    if (driverBone.type !== 'Bone') return
-    const displayBone = getAvatarBone(displayAvatar, driverBone.name)
-    if (displayBone) map.set(driverBone, displayBone)
-  })
-  return map
-}
-
-// For each display bone whose parent is not itself an animated bone (i.e.
-// the top of the skeleton, parented to the armature/mesh root), cache that
-// parent's world rotation once. It never changes, so it doesn't need to be
-// recomputed every frame the way the animated chain does.
-function buildStaticParentMap(displayAvatar: THREE.Object3D) {
-  const map = new Map<THREE.Object3D, THREE.Quaternion>()
-  displayAvatar.traverse((child) => {
-    if (child.type !== 'Bone') return
-    if (!child.parent || child.parent.type !== 'Bone') {
-      map.set(child, child.parent ? child.parent.getWorldQuaternion(new THREE.Quaternion()) : new THREE.Quaternion())
-    }
-  })
-  return map
-}
-
-function applyRetarget(
-  driverAvatar: THREE.Object3D,
-  boneMap: Map<THREE.Object3D, THREE.Object3D>,
-  staticParentWorldQuat: Map<THREE.Object3D, THREE.Quaternion>
-) {
-  driverAvatar.updateMatrixWorld(true)
-  // Bones are visited parent-before-child, so by the time a child is
-  // processed its display-side parent's brand-new world rotation is already
-  // in this map.
-  const newWorldQuat = new Map<THREE.Object3D, THREE.Quaternion>()
-  driverAvatar.traverse((driverBone) => {
-    if (driverBone.type !== 'Bone') return
-    const displayBone = boneMap.get(driverBone)
-    if (!displayBone) return
-    const driverUserData = driverBone.userData as BoneUserData
-    const displayUserData = displayBone.userData as BoneUserData
-    const driverRestWorld = driverUserData.restWorldQuaternion
-    const displayRestWorld = displayUserData.restWorldQuaternion
-    if (!driverRestWorld || !displayRestWorld) return
-
-    const driverCurrentWorld = driverBone.getWorldQuaternion(new THREE.Quaternion())
-    // How far the driver bone has moved from its own rest, in world space.
-    const worldDelta = driverRestWorld.clone().invert().multiply(driverCurrentWorld)
-    // Apply that same world-space offset on top of the display bone's rest.
-    const targetWorld = displayRestWorld.clone().multiply(worldDelta)
-
-    const displayParent = displayBone.parent
-    const parentWorld =
-      (displayParent && displayParent.type === 'Bone' ? newWorldQuat.get(displayParent) : undefined) ??
-      staticParentWorldQuat.get(displayBone) ??
-      new THREE.Quaternion()
-    const localQuat = parentWorld.clone().invert().multiply(targetWorld)
-    displayBone.quaternion.copy(localQuat)
-    newWorldQuat.set(displayBone, targetWorld)
   })
 }
 
