@@ -169,7 +169,12 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
           const userData = bone.userData as BoneUserData
           const delta = userData.delta ?? (userData.delta = { x: 0, y: 0, z: 0 })
           const value = delta[axis]
-          const step = 0.075
+          // The original step completed most poses in a few rendered frames.
+          // Many signs share a raised-hand preparation pose, so that speed made
+          // different signs look identical before their distinct hand/path
+          // movements were visible. A smaller step keeps each authored pose
+          // readable and makes the transition feel less robotic.
+          const step = 0.028
           const inProgress = direction === '+' ? value < target : value > target
           if (inProgress) {
             delta[axis] = direction === '+' ? Math.min(value + step, target) : Math.max(value - step, target)
@@ -182,7 +187,9 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
         }
         if (!frame.length) {
           queue.shift()
-          nextFrameAt = now + 230
+          // Hold each authored key pose long enough for the user to perceive
+          // the sign's movement before progressing to the next one.
+          nextFrameAt = now + 360
         }
       }
       if (wasSigning && !queue.length) {
@@ -237,6 +244,21 @@ function captureRestQuaternions(avatar: THREE.Object3D) {
 function enqueuePhrase(input: string, runtime: SignRuntime, append = false) {
   if (!append) runtime.animations = []
   const { tokens } = textToGloss(input) as { tokens: string[] }
+  
+  const queueNames = tokens.map(token => {
+    const word = token.toUpperCase()
+    const wordAnimation = wordAnimations[word]
+    if (wordAnimation) {
+      // Find the action ID in SUPPORTED_SIGNS if possible, fallback to clip_name
+      return `clip_${word.toLowerCase().replace(' ', '')}`
+    }
+    return token
+  })
+
+  console.log(`Input:\n${input}`)
+  console.log(`Detected:\n${tokens.join(' → ')}`)
+  console.log(`Animation queue:\n${queueNames.join(' → ')}`)
+
   for (const token of tokens) {
     const word = token.toUpperCase()
     const wordAnimation = wordAnimations[word]

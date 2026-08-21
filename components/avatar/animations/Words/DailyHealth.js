@@ -11,50 +11,62 @@ const finish = (ref) => {
 };
 
 /**
- * WATER - Right 'W' hand (index, middle, ring extended; pinky folded) tapping chin twice
+ * WATER - A relaxed W-hand travels to the chin, makes two small natural
+ * contacts, then returns through the same path. The previous version jumped
+ * directly between large elbow rotations, which made the sign look robotic.
  */
 export const WATER = (ref) => {
     let a = [];
-    // Stage 1: Right hand 'W' shape near chin
-    a.push(["mixamorigRightHandPinky1", "rotation", "z", Math.PI/2, "+"]);
-    a.push(["mixamorigRightHandPinky2", "rotation", "z", Math.PI/2, "+"]);
-    a.push(["mixamorigRightHandThumb1", "rotation", "x", Math.PI/3, "+"]);
-    a.push(["mixamorigRightHandThumb2", "rotation", "y", -Math.PI/4, "-"]);
-
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/3.2, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/6, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/4, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI/2.2, "+"]);
-    a.push(["mixamorigRightHand", "rotation", "x", -Math.PI/6, "-"]);
+    // Prepare the W-hand: first three fingers remain open while the little
+    // finger and thumb fold in. The wrist is turned toward the face.
+    a.push(["mixamorigRightHandPinky1", "rotation", "z", Math.PI / 2, "+"]);
+    a.push(["mixamorigRightHandPinky2", "rotation", "z", Math.PI / 2, "+"]);
+    a.push(["mixamorigRightHandPinky3", "rotation", "z", Math.PI / 3, "+"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "x", Math.PI / 4, "+"]);
+    a.push(["mixamorigRightHandThumb2", "rotation", "y", -Math.PI / 5, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI / 3.4, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "z", Math.PI / 5, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI / 3.8, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI / 2.45, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "z", Math.PI / 10, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "x", -Math.PI / 10, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "y", Math.PI / 6, "+"]);
     ref.animations.push(a);
 
-    // Tap 1
+    // Ease in to the chin rather than snapping into it.
     a = [];
-    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI/1.9, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI / 2.9, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI / 2.08, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "x", -Math.PI / 5, "-"]);
+    a.push(["mixamorigNeck", "rotation", "x", Math.PI / 9, "+"]);
     ref.animations.push(a);
 
-    // Pull back slightly
+    // A short release and second gentle contact read as a deliberate sign.
     a = [];
-    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI/2.2, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI / 2.22, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "x", -Math.PI / 12, "+"]);
     ref.animations.push(a);
 
-    // Tap 2
     a = [];
-    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI/1.9, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI / 2.08, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "x", -Math.PI / 5, "-"]);
     ref.animations.push(a);
 
-    // Reset
+    // Return to the avatar's shared neutral pose.
     a = [];
     a.push(["mixamorigRightHandPinky1", "rotation", "z", 0, "-"]);
     a.push(["mixamorigRightHandPinky2", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandPinky3", "rotation", "z", 0, "-"]);
     a.push(["mixamorigRightHandThumb1", "rotation", "x", 0, "-"]);
     a.push(["mixamorigRightHandThumb2", "rotation", "y", 0, "+"]);
-
     a.push(["mixamorigRightArm", "rotation", "x", 0, "+"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/3, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "z", Math.PI / 3, "+"]);
     a.push(["mixamorigRightForeArm", "rotation", "x", 0, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/1.5, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI / 1.5, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "z", 0, "-"]);
     a.push(["mixamorigRightHand", "rotation", "x", 0, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "y", 0, "-"]);
+    a.push(["mixamorigNeck", "rotation", "x", Math.PI / 12, "-"]);
     ref.animations.push(a);
 
     finish(ref);

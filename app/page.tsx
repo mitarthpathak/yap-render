@@ -6,6 +6,8 @@ import {
   ArrowDownRight,
   ArrowRight,
   AudioLines,
+  ChevronLeft,
+  ChevronRight,
   Globe2,
   Hand,
   LayoutDashboard,
@@ -45,6 +47,8 @@ const features = [
   { icon: Globe2, title: 'Reach more people', text: 'Make classrooms, clinics, and conversations feel open to everyone.' },
 ]
 
+const quickPhrases = ['YOU', 'HOME', 'TIME', 'PERSON', 'HELLO', 'HELP', 'THANK YOU', 'YES', 'NO', 'PLEASE', 'SORRY', 'WELCOME', 'GOOD', 'BAD', 'STOP', 'WAIT', 'COME', 'GO', 'WANT', 'NEED', 'LIKE', 'KNOW', 'UNDERSTAND', 'ASK', 'DRINK', 'EAT', 'WATER', 'GIVE', 'TAKE', 'SHOW', 'LOOK', 'SEE', 'LISTEN', 'TALK', 'START', 'FINISH', 'AGAIN', 'SLEEP', 'TOILET', 'DOCTOR', 'HOSPITAL', 'PAIN', 'SCHOOL', 'CLASS', 'TEACHER', 'STUDENT', 'BOOK']
+
 export default function Page() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [translation, setTranslation] = useState('YOU HOME')
@@ -63,6 +67,7 @@ export default function Page() {
   const [dashboardOpen, setDashboardOpen] = useState(false)
   const recognitionRef = useRef<InstanceType<SpeechRecognitionConstructor> | null>(null)
   const liveModeRef = useRef(false)
+  const quickPhrasesRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -150,6 +155,10 @@ export default function Page() {
     setLiveMode(false)
     if (isListening) recognitionRef.current?.stop()
     setStopId((current) => current + 1)
+  }
+
+  const scrollQuickPhrases = (direction: -1 | 1) => {
+    quickPhrasesRef.current?.scrollBy({ left: direction * 260, behavior: 'smooth' })
   }
 
   const openAuth = (mode: 'signin' | 'signup') => {
@@ -254,8 +263,12 @@ export default function Page() {
                 <button type="button" onClick={toggleLiveMode} className={liveMode ? 'live-translation is-active' : 'live-translation'} disabled={!speechSupported} title="Continuously convert final speech into ISL"><span /> Live</button>
               </div>
               <div className="terminal-footer terminal-footer-live"><button type="button" onClick={stopTranslation} className="terminal-play terminal-stop" aria-label="Stop translation"><Square size={11} fill="currentColor" /></button><span>{liveMode ? 'live translation is listening' : avatarState === 'signing' ? 'translation in progress' : avatarState === 'loading' ? 'loading avatar' : 'ready — words or A–Z fingerspelling'}</span><span className="terminal-time">ISL</span></div>
-              <div className="quick-phrases" aria-label="Try a sample phrase">
-                {['YOU', 'HOME', 'TIME', 'PERSON'].map((word) => <button key={word} onClick={() => { setTranslation(word); setAvatarPhrase(word); setRequestId((current) => current + 1) }}>{word}</button>)}
+              <div className="quick-phrases" aria-label="Try a supported sign">
+                <button type="button" className="quick-phrases-arrow" onClick={() => scrollQuickPhrases(-1)} aria-label="Show previous signs"><ChevronLeft size={15} /></button>
+                <div ref={quickPhrasesRef} className="quick-phrases-track">
+                  {quickPhrases.map((word) => <button key={word} onClick={() => { setTranslation(word); setAvatarPhrase(word); setRequestId((current) => current + 1) }}>{word}</button>)}
+                </div>
+                <button type="button" className="quick-phrases-arrow" onClick={() => scrollQuickPhrases(1)} aria-label="Show more signs"><ChevronRight size={15} /></button>
               </div>
               <div className="terminal-footer"><span className="terminal-play">{avatarState === 'signing' ? <Square size={11} fill="currentColor" /> : <Play size={14} fill="currentColor" />}</span><span>{avatarState === 'signing' ? 'translation in progress' : avatarState === 'loading' ? 'loading avatar' : 'ready — words or A–Z fingerspelling'}</span><span className="terminal-time">ISL</span></div>
             </div>
