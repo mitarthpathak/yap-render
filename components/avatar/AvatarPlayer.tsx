@@ -318,8 +318,7 @@ function enqueuePhrase(input: string, runtime: SignRuntime, append = false) {
   
   const queueNames = tokens.map(token => {
     const word = token.toUpperCase()
-    const wordAnimation = wordAnimations[word]
-    if (wordAnimation) {
+    if (word in wordAnimations) {
       // Find the action ID in SUPPORTED_SIGNS if possible, fallback to clip_name
       return `clip_${word.toLowerCase().replace(' ', '')}`
     }
