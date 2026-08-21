@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useEffect, useRef } from 'react'
 import * as THREE from 'three'
@@ -18,6 +18,8 @@ type SignRuntime = {
 
 type BoneUserData = {
   restQuaternion?: THREE.Quaternion
+  restPosition?: THREE.Vector3
+  restScale?: THREE.Vector3
   delta?: { x: number; y: number; z: number }
 }
 
@@ -27,22 +29,29 @@ type AvatarPlayerProps = {
   model?: 'default' | 'human'
   appendToQueue?: boolean
   stopId?: number
+  resetId?: number
+  speed?: number
   onStateChange: (state: 'loading' | 'ready' | 'signing') => void
 }
 
 const wordAnimations = words as unknown as Record<string, (runtime: SignRuntime) => void>
 const alphabetAnimations = alphabets as unknown as Record<string, (runtime: SignRuntime) => void>
 
-export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQueue = false, stopId = 0, onStateChange }: AvatarPlayerProps) {
+export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQueue = false, stopId = 0, resetId = 0, speed = 1, onStateChange }: AvatarPlayerProps) {
   const mountRef = useRef<HTMLDivElement>(null)
   const runtimeRef = useRef<SignRuntime>({ animations: [], characters: [], pending: true })
   const readyRef = useRef(false)
   const pendingPhraseRef = useRef<{ phrase: string; requestId: number } | null>(null)
   const appendToQueueRef = useRef(appendToQueue)
+  const speedRef = useRef(speed)
 
   useEffect(() => {
     appendToQueueRef.current = appendToQueue
   }, [appendToQueue])
+
+  useEffect(() => {
+    speedRef.current = speed
+  }, [speed])
 
   useEffect(() => {
     if (!requestId) return
@@ -62,6 +71,13 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
     runtimeRef.current.animations = []
     onStateChange('ready')
   }, [stopId, onStateChange])
+
+  useEffect(() => {
+    if (!resetId || !readyRef.current) return
+    pendingPhraseRef.current = null
+    resetAvatar(runtimeRef.current, model)
+    onStateChange('ready')
+  }, [resetId, model, onStateChange])
 
   useEffect(() => {
     const mount = mountRef.current
@@ -135,10 +151,10 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
       // onto each bone's own rest quaternion instead of added as raw Euler
       // components (Euler component addition only holds near identity).
       captureRestQuaternions(avatar)
-      // YBot ships in a neutral T-pose and needs the shared pose setup. The
-      // human avatar is already authored in a relaxed arms-down pose; applying
-      // YBot's pose to it pushes both arms out horizontally.
-      if (model !== 'human') defaultPose(runtime)
+      // Apply the existing default-pose instructions immediately so every new
+      // instance starts clean. Keeping those instructions in the frame queue
+      // allowed a switch or reset to display an intermediate bone position.
+      resetAvatar(runtime, model)
       readyRef.current = true
       const queuedRequest = pendingPhraseRef.current
       if (queuedRequest) {
@@ -174,7 +190,7 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
           // different signs look identical before their distinct hand/path
           // movements were visible. A smaller step keeps each authored pose
           // readable and makes the transition feel less robotic.
-          const step = 0.028
+          const step = 0.028 * speedRef.current
           const inProgress = direction === '+' ? value < target : value > target
           if (inProgress) {
             delta[axis] = direction === '+' ? Math.min(value + step, target) : Math.max(value - step, target)
@@ -189,7 +205,7 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
           queue.shift()
           // Hold each authored key pose long enough for the user to perceive
           // the sign's movement before progressing to the next one.
-          nextFrameAt = now + 360
+          nextFrameAt = now + 360 / speedRef.current
         }
       }
       if (wasSigning && !queue.length) {
@@ -237,8 +253,46 @@ function getAvatarBone(avatar: THREE.Object3D, boneName: string) {
 function captureRestQuaternions(avatar: THREE.Object3D) {
   avatar.traverse((child) => {
     if (child.type !== 'Bone') return
-    ;(child.userData as BoneUserData).restQuaternion = child.quaternion.clone()
+    const userData = child.userData as BoneUserData
+    userData.restQuaternion = child.quaternion.clone()
+    userData.restPosition = child.position.clone()
+    userData.restScale = child.scale.clone()
   })
+}
+
+function resetAvatar(runtime: SignRuntime, model: 'default' | 'human') {
+  const avatar = runtime.avatar
+  if (!avatar) return
+
+  runtime.animations = []
+  runtime.characters = []
+  avatar.traverse((child) => {
+    if (child.type !== 'Bone') return
+    const userData = child.userData as BoneUserData
+    if (userData.restQuaternion) child.quaternion.copy(userData.restQuaternion)
+    if (userData.restPosition) child.position.copy(userData.restPosition)
+    if (userData.restScale) child.scale.copy(userData.restScale)
+    userData.delta = { x: 0, y: 0, z: 0 }
+  })
+
+  // The app's Robot default is authored by defaultPose(). Reuse its existing
+  // instructions, but snap their final state instead of queuing an animation.
+  if (model !== 'human') {
+    defaultPose(runtime)
+    for (const frame of runtime.animations) {
+      for (const [boneName, , axis, target] of frame) {
+        const bone = getAvatarBone(avatar, boneName)
+        if (!bone) continue
+        const userData = bone.userData as BoneUserData
+        const delta = userData.delta ?? (userData.delta = { x: 0, y: 0, z: 0 })
+        delta[axis] = target
+        const deltaQuaternion = new THREE.Quaternion().setFromEuler(new THREE.Euler(delta.x, delta.y, delta.z))
+        bone.quaternion.copy(userData.restQuaternion ? userData.restQuaternion.clone().multiply(deltaQuaternion) : deltaQuaternion)
+      }
+    }
+  }
+  runtime.animations = []
+  runtime.characters = []
 }
 
 function enqueuePhrase(input: string, runtime: SignRuntime, append = false) {
@@ -256,8 +310,8 @@ function enqueuePhrase(input: string, runtime: SignRuntime, append = false) {
   })
 
   console.log(`Input:\n${input}`)
-  console.log(`Detected:\n${tokens.join(' → ')}`)
-  console.log(`Animation queue:\n${queueNames.join(' → ')}`)
+  console.log(`Detected:\n${tokens.join(' ΓåÆ ')}`)
+  console.log(`Animation queue:\n${queueNames.join(' ΓåÆ ')}`)
 
   for (const token of tokens) {
     const word = token.toUpperCase()
