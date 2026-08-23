@@ -44,11 +44,11 @@ type SpeechRecognitionConstructor = new () => {
 type LocalAccount = { name: string; email: string }
 
 const team = [
-  { name: 'Mitarth Pathak', role: 'Engineering, UI & 3D', image: null },
-  { name: 'Navneet Singh', role: 'Technology & AI', image: null },
+  { name: 'Mitarth Pathak', role: 'Engineering, UI & 3D', image: null, linkedin: 'https://www.linkedin.com/in/mitarth-pathak/' },
+  { name: 'Navneet Singh', role: 'Technology & AI', image: null, linkedin: 'https://www.linkedin.com/in/navneet-singh99/' },
   { name: 'Gaurav Soni', role: 'Design & Experience', image: null },
-  { name: 'Deep Panchal', role: 'Product & Vision', image: null },
-  { name: 'Nooren Qureshi', role: 'Research & Community', image: null },
+  { name: 'Deep Panchal', role: 'Product & Vision', image: null, linkedin: 'https://www.linkedin.com/in/deep-panchal-3a1474399/' },
+  { name: 'Nooren Qureshi', role: 'Research & Community', image: null, linkedin: 'https://www.linkedin.com/in/nooren-qureshi-803a27381/' },
 ]
 
 const features = [
@@ -270,6 +270,7 @@ export default function Page() {
             {team.map((member) => <div className="about-member" key={member.name}>
               <div className="about-member-avatar" aria-label={`${member.name} profile picture`}>{member.image ? <img src={member.image} alt="" /> : member.name.charAt(0)}</div>
               <strong>{member.name}</strong><span>{member.role}</span>
+              {member.linkedin && <a className="about-member-link" href={member.linkedin} target="_blank" rel="noreferrer" aria-label={`Open ${member.name}'s LinkedIn profile`}><span className="about-member-link-mark">in</span> LinkedIn</a>}
             </div>)}
           </div>
         </section>
