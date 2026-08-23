@@ -274,6 +274,10 @@ h1 em, h2 em { color: var(--coral); font-style: italic; }
 .about-member-avatar img { width: 100%; height: 100%; object-fit: cover; }
 .about-member strong { font-size: .78rem; line-height: 1.15; }
 .about-member span { color: var(--ink-soft); font-size: .65rem; line-height: 1.35; }
+.about-member-link { display: inline-flex; align-items: center; gap: .3rem; margin-top: .15rem; color: var(--foreground); font-size: .62rem; font-weight: 700; text-decoration: none; }
+.about-member-link-mark { display: inline-grid; place-items: center; width: 14px; height: 14px; border-radius: 2px; background: var(--foreground); color: var(--surface); font-size: .58rem; font-weight: 800; line-height: 1; }
+.about-member-link:hover { color: var(--coral); text-decoration: underline; text-underline-offset: 3px; }
+.about-member-link:hover .about-member-link-mark { background: var(--coral); }
 @media (max-width: 760px) {
   .about-modal { padding: 2rem 1.25rem; }
   .about-team { grid-template-columns: repeat(2, 1fr); }
