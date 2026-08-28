@@ -8,7 +8,7 @@ import { EAT, EATING, ATE, FOOD } from './Words/EAT';
 
 // Basic & Social Expressions
 import {
-    YES, NO, PLEASE, SORRY, WELCOME, GOOD, BAD, HELP, STOP, WAIT
+    YES, NO, PLEASE, SORRY, WELCOME, GOOD, BAD, HELP, STOP, WAIT, HELLO, THANK_YOU
 } from './Words/BasicSocial';
 
 // Actions & Movement
@@ -168,7 +168,7 @@ const BELIEVED = BELIEVE;
 // Master vocabulary list for UI and indexing
 var wordList = [
     // Basic & Social
-    'YES', 'NO', 'PLEASE', 'SORRY', 'WELCOME', 'GOOD', 'BAD', 'HELP', 'STOP', 'WAIT',
+    'YES', 'NO', 'PLEASE', 'SORRY', 'WELCOME', 'GOOD', 'BAD', 'HELP', 'STOP', 'WAIT', 'HELLO', 'THANK_YOU',
     // Actions
     'COME', 'GO', 'GIVE', 'TAKE', 'WANT', 'NEED', 'LIKE', 'KNOW', 'UNDERSTAND', 'ASK',
     // Discourse
@@ -202,7 +202,7 @@ export {
     // Legacy & Core
     TIME, HOME, HOMES, PERSON, YOU, DRINK, DRINKING, DRANK, DRINKS, EAT, EATING, ATE, FOOD,
     // Basic & Social
-    YES, NO, PLEASE, SORRY, WELCOME, GOOD, BAD, HELP, HELPING, STOP, WAIT, WAITING,
+    YES, NO, PLEASE, SORRY, WELCOME, GOOD, BAD, HELP, HELPING, STOP, WAIT, WAITING, HELLO, THANK_YOU,
     // Actions
     COME, COMING, GO, GOING, GIVE, GIVING, GAVE, TAKE, TAKING, TOOK,
     WANT, WANTING, NEED, NEEDING, LIKE, LIKING, LIKED, KNOW, KNOWING, KNEW,

@@ -506,6 +506,71 @@ export const HELP = (ref) => {
 };
 
 /**
+ * HELLO - Open right hand waves from beside the face.
+ * This follows the same bone-delta queue contract as the established signs.
+ */
+export const HELLO = (ref) => {
+    const isHuman = ref.model === 'human';
+    let a = [];
+    // The YBot and human rigs have different bind poses. Keep the hand beside
+    // the face on each: the human conversion lifts its forearm from the
+    // relaxed pose, while YBot needs a raised elbow instead of a downward arm.
+    a.push(["mixamorigRightArm", "rotation", "x", isHuman ? -Math.PI / 3 : Math.PI / 16, isHuman ? "-" : "+"]);
+    a.push(["mixamorigRightArm", "rotation", "z", isHuman ? Math.PI / 5 : -Math.PI / 5, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI / 3, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", isHuman ? Math.PI / 2.5 : -Math.PI / 8, isHuman ? "+" : "-"]);
+    a.push(["mixamorigRightHand", "rotation", "y", Math.PI / 4, "+"]);
+    ref.animations.push(a);
+
+    a = [];
+    a.push(["mixamorigRightHand", "rotation", "z", Math.PI / 5, "+"]);
+    ref.animations.push(a);
+    a = [];
+    a.push(["mixamorigRightHand", "rotation", "z", -Math.PI / 5, "-"]);
+    ref.animations.push(a);
+    a = [];
+    a.push(["mixamorigRightHand", "rotation", "z", Math.PI / 5, "+"]);
+    ref.animations.push(a);
+
+    a = [];
+    a.push(["mixamorigRightArm", "rotation", "x", 0, isHuman ? "+" : "-"]);
+    a.push(["mixamorigRightArm", "rotation", "z", Math.PI / 3, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", 0, isHuman ? "-" : "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI / 1.5, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "y", 0, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "z", 0, "-"]);
+    ref.animations.push(a);
+    finish(ref);
+};
+
+/**
+ * THANK_YOU - Open right hand travels forward from the chin.
+ */
+export const THANK_YOU = (ref) => {
+    let a = [];
+    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI / 3.2, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "z", Math.PI / 6, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI / 3.5, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI / 2.6, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "x", -Math.PI / 5, "-"]);
+    ref.animations.push(a);
+
+    a = [];
+    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI / 2.1, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI / 3.5, "-"]);
+    ref.animations.push(a);
+
+    a = [];
+    a.push(["mixamorigRightArm", "rotation", "x", 0, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "z", Math.PI / 3, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", 0, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI / 1.5, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "x", 0, "+"]);
+    ref.animations.push(a);
+    finish(ref);
+};
+
+/**
  * STOP - Open right hand chopping vertically down onto flat horizontal left palm
  */
 export const STOP = (ref) => {

@@ -6,12 +6,16 @@ import {
   ArrowDownRight,
   ArrowRight,
   AudioLines,
+  ChevronLeft,
+  ChevronRight,
   Globe2,
   Hand,
   LayoutDashboard,
   LogOut,
+  Maximize2,
   Menu,
   Mic,
+  Minimize2,
   Move3d,
   Play,
   Square,
@@ -39,11 +43,21 @@ type SpeechRecognitionConstructor = new () => {
 
 type LocalAccount = { name: string; email: string }
 
+const team = [
+  { name: 'Mitarth Pathak', role: 'Engineering, UI & 3D', image: null, linkedin: 'https://www.linkedin.com/in/mitarth-pathak/' },
+  { name: 'Navneet Singh', role: 'Technology & AI', image: null, linkedin: 'https://www.linkedin.com/in/navneet-singh99/' },
+  { name: 'Gaurav Soni', role: 'Design & Experience', image: null },
+  { name: 'Deep Panchal', role: 'Product & Vision', image: null, linkedin: 'https://www.linkedin.com/in/deep-panchal-3a1474399/' },
+  { name: 'Nooren Qureshi', role: 'Research & Community', image: null, linkedin: 'https://www.linkedin.com/in/nooren-qureshi-803a27381/' },
+]
+
 const features = [
   { icon: Mic, title: 'Speak naturally', text: 'Yap captures the rhythm, intent, and nuance of everyday speech.' },
   { icon: Move3d, title: 'See every sign', text: 'Render turns language into expressive Indian Sign Language in real time.' },
   { icon: Globe2, title: 'Reach more people', text: 'Make classrooms, clinics, and conversations feel open to everyone.' },
 ]
+
+const quickPhrases = ['YOU', 'HOME', 'TIME', 'PERSON', 'HELLO', 'HELP', 'THANK YOU', 'YES', 'NO', 'PLEASE', 'SORRY', 'WELCOME', 'GOOD', 'BAD', 'STOP', 'WAIT', 'COME', 'GO', 'WANT', 'NEED', 'LIKE', 'KNOW', 'UNDERSTAND', 'ASK', 'DRINK', 'EAT', 'WATER', 'GIVE', 'TAKE', 'SHOW', 'LOOK', 'SEE', 'LISTEN', 'TALK', 'START', 'FINISH', 'AGAIN', 'SLEEP', 'TOILET', 'DOCTOR', 'HOSPITAL', 'PAIN', 'SCHOOL', 'CLASS', 'TEACHER', 'STUDENT', 'BOOK']
 
 export default function Page() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -52,6 +66,8 @@ export default function Page() {
   const [avatarModel, setAvatarModel] = useState<'default' | 'human'>('default')
   const [requestId, setRequestId] = useState(0)
   const [stopId, setStopId] = useState(0)
+  const [resetId, setResetId] = useState(0)
+  const [speed, setSpeed] = useState(1)
   const [avatarState, setAvatarState] = useState<'loading' | 'ready' | 'signing'>('loading')
   const [speechSupported, setSpeechSupported] = useState(false)
   const [isListening, setIsListening] = useState(false)
@@ -61,8 +77,11 @@ export default function Page() {
   const [account, setAccount] = useState<LocalAccount | null>(null)
   const [accountMenuOpen, setAccountMenuOpen] = useState(false)
   const [dashboardOpen, setDashboardOpen] = useState(false)
+  const [isMaximized, setIsMaximized] = useState(false)
+  const [aboutOpen, setAboutOpen] = useState(false)
   const recognitionRef = useRef<InstanceType<SpeechRecognitionConstructor> | null>(null)
   const liveModeRef = useRef(false)
+  const quickPhrasesRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -77,6 +96,13 @@ export default function Page() {
     const savedAccount = window.localStorage.getItem('yap-render-account')
     if (savedAccount) setAccount(JSON.parse(savedAccount) as LocalAccount)
   }, [])
+
+  useEffect(() => {
+    if (!aboutOpen) return
+    const closeOnEscape = (event: KeyboardEvent) => event.key === 'Escape' && setAboutOpen(false)
+    document.addEventListener('keydown', closeOnEscape)
+    return () => document.removeEventListener('keydown', closeOnEscape)
+  }, [aboutOpen])
 
   useEffect(() => {
     const speechWindow = window as typeof window & {
@@ -152,6 +178,10 @@ export default function Page() {
     setStopId((current) => current + 1)
   }
 
+  const scrollQuickPhrases = (direction: -1 | 1) => {
+    quickPhrasesRef.current?.scrollBy({ left: direction * 260, behavior: 'smooth' })
+  }
+
   const openAuth = (mode: 'signin' | 'signup') => {
     setAuthMode(mode)
     setAuthOpen(true)
@@ -223,7 +253,30 @@ export default function Page() {
         </section>
       </div>}
 
-      <section className="hero section-pad" id="top">
+      {aboutOpen && <div className="auth-backdrop about-backdrop" role="presentation" onMouseDown={() => setAboutOpen(false)}>
+        <section className="about-modal" role="dialog" aria-modal="true" aria-labelledby="about-title" onMouseDown={(event) => event.stopPropagation()}>
+          <button className="auth-close" onClick={() => setAboutOpen(false)} aria-label="Close About Us dialog"><X size={18} /></button>
+          <div className="about-identity">
+            <span className="about-logo-mark"><img src="/yap-render-logo-mark.png" alt="Yap & Render logo" /></span>
+            <p className="about-logo-wordmark">yap <span>&amp;</span> render</p>
+          </div>
+          <p className="eyebrow">About us</p>
+          <h2 id="about-title">Making space for<br /><em>every voice.</em></h2>
+          <p className="about-copy">Yap &amp; Render is building a more connected future through language and technology.</p>
+          <p className="about-copy">We turn spoken words into Indian Sign Language, helping conversations feel more open and human.</p>
+          <p className="about-copy">Our work brings together thoughtful design, accessible technology, and real community needs.</p>
+          <p className="about-copy">Together, we are creating more ways for people to be heard, understood, and included.</p>
+          <div className="about-team" aria-label="Yap and Render team">
+            {team.map((member) => <div className="about-member" key={member.name}>
+              <div className="about-member-avatar" aria-label={`${member.name} profile picture`}>{member.image ? <img src={member.image} alt="" /> : member.name.charAt(0)}</div>
+              <strong>{member.name}</strong><span>{member.role}</span>
+              {member.linkedin && <a className="about-member-link" href={member.linkedin} target="_blank" rel="noreferrer" aria-label={`Open ${member.name}'s LinkedIn profile`}><span className="about-member-link-mark">in</span> LinkedIn</a>}
+            </div>)}
+          </div>
+        </section>
+      </div>}
+
+      <section className={isMaximized ? 'hero section-pad is-demo-maximized' : 'hero section-pad'} id="top">
         <div className="hero-copy reveal">
           <p className="eyebrow"><span className="eyebrow-dot" /> Language, without limits</p>
           <h1 className="hero-title"><span>Say it.</span><span><em>See it.</em></span><span>Share it.</span></h1>
@@ -238,12 +291,40 @@ export default function Page() {
 
         <div className="avatar-stage reveal" id="try-it">
           <div className="terminal-window" aria-label="Yap and Render live translation workspace">
-            <div className="terminal-chrome"><span className="chrome-dot red" /><span className="chrome-dot yellow" /><span className="chrome-dot green" /><span className="terminal-title">yap / render</span></div>
-            <div className="terminal-body avatar-terminal-body">
-              <div className="avatar-canvas-shell" aria-label="Interactive 3D avatar canvas ready for Indian Sign Language playback">
-                <AvatarPlayer phrase={avatarPhrase} requestId={requestId} model={avatarModel} appendToQueue={liveMode} stopId={stopId} onStateChange={setAvatarState} />
+            <div className="terminal-chrome"><span className="chrome-dot red" /><span className="chrome-dot yellow" /><span className="chrome-dot green" /><span className="terminal-title">yap / render</span><button
+              type="button"
+              className="terminal-maximize-toggle"
+              onClick={() => setIsMaximized((maximized) => !maximized)}
+              aria-label={isMaximized ? 'Restore avatar canvas size' : 'Maximize avatar canvas'}
+              aria-pressed={isMaximized}
+              title={isMaximized ? 'Restore size (Esc)' : 'Maximize canvas'}
+            >
+              {isMaximized ? <Minimize2 size={16} strokeWidth={1.7} /> : <Maximize2 size={16} strokeWidth={1.7} />}
+            </button></div>
+            <div className={isMaximized ? 'terminal-body avatar-terminal-body is-maximized' : 'terminal-body avatar-terminal-body'}>
+              <div className="avatar-workspace">
+              <div
+                className={isMaximized ? 'avatar-canvas-shell is-maximized' : 'avatar-canvas-shell'}
+                aria-label="Interactive 3D avatar canvas ready for Indian Sign Language playback"
+                onTransitionEnd={(event) => {
+                  if (event.propertyName === 'height') window.dispatchEvent(new Event('resize'))
+                }}
+              >
+                <AvatarPlayer phrase={avatarPhrase} requestId={requestId} model={avatarModel} appendToQueue={liveMode} stopId={stopId} resetId={resetId} speed={speed} onStateChange={setAvatarState} />
                 <span className="canvas-badge"><span className="live-dot" /> ISL AVATAR · {avatarState}</span>
                 <div className="avatar-selector" role="group" aria-label="Choose avatar"><span>AVATAR</span><button type="button" className={avatarModel === 'default' ? 'is-selected' : ''} onClick={() => setAvatarModel('default')} aria-pressed={avatarModel === 'default'}>Default</button><button type="button" className={avatarModel === 'human' ? 'is-selected' : ''} onClick={() => setAvatarModel('human')} aria-pressed={avatarModel === 'human'}>Human</button></div>
+              </div>
+              <aside className="avatar-command-panel" aria-label="Avatar playback and sign commands">
+                <div className="avatar-command-input">
+                  <input value={translation} onChange={(event) => setTranslation(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && runTranslation()} aria-label="Text to translate into Indian Sign Language" placeholder="Type a message…" />
+                  <button type="button" onClick={toggleVoiceInput} className={isListening ? 'voice-input is-listening' : 'voice-input'} aria-label={isListening ? 'Stop voice input' : 'Start voice input'} disabled={!speechSupported}>{isListening ? <MicOff size={15} /> : <Mic size={15} />}<span>{isListening ? 'Listening' : 'Voice'}</span></button>
+                  <button type="button" onClick={toggleLiveMode} className={liveMode ? 'live-translation is-active' : 'live-translation'} disabled={!speechSupported}><span /> Live</button>
+                </div>
+                <div className="avatar-command-actions"><button type="button" onClick={stopTranslation} className="terminal-play terminal-stop" aria-label="Stop translation" title="Stop translation"><Square size={11} fill="currentColor" /></button><button type="button" onClick={() => setResetId((c) => c + 1)} className="terminal-play terminal-stop" aria-label="Reset avatar" title="Reset avatar to rest pose"><span aria-hidden="true">↺</span></button><label className="avatar-speed" title="Animation speed">Speed<input type="range" min="0.5" max="3" step="0.25" value={speed} onChange={(e) => setSpeed(Number(e.target.value))} />{speed}×</label></div>
+                <div className="avatar-command-list" aria-label="Try a supported sign">
+                  {quickPhrases.map((word) => <button type="button" key={word} onClick={() => { setTranslation(word); setAvatarPhrase(word); setRequestId((current) => current + 1) }}>{word}</button>)}
+                </div>
+              </aside>
               </div>
               <div className="translator-controls">
                 <input value={translation} onChange={(event) => setTranslation(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && runTranslation()} aria-label="Text to translate into Indian Sign Language" placeholder="Type a message…" />
@@ -253,9 +334,13 @@ export default function Page() {
                 </button>
                 <button type="button" onClick={toggleLiveMode} className={liveMode ? 'live-translation is-active' : 'live-translation'} disabled={!speechSupported} title="Continuously convert final speech into ISL"><span /> Live</button>
               </div>
-              <div className="terminal-footer terminal-footer-live"><button type="button" onClick={stopTranslation} className="terminal-play terminal-stop" aria-label="Stop translation"><Square size={11} fill="currentColor" /></button><span>{liveMode ? 'live translation is listening' : avatarState === 'signing' ? 'translation in progress' : avatarState === 'loading' ? 'loading avatar' : 'ready — words or A–Z fingerspelling'}</span><span className="terminal-time">ISL</span></div>
-              <div className="quick-phrases" aria-label="Try a sample phrase">
-                {['YOU', 'HOME', 'TIME', 'PERSON'].map((word) => <button key={word} onClick={() => { setTranslation(word); setAvatarPhrase(word); setRequestId((current) => current + 1) }}>{word}</button>)}
+              <div className="terminal-footer terminal-footer-live"><button type="button" onClick={stopTranslation} className="terminal-play terminal-stop" aria-label="Stop translation"><Square size={11} fill="currentColor" /></button><button type="button" onClick={() => setResetId((c) => c + 1)} className="terminal-play terminal-stop" aria-label="Reset avatar" title="Reset avatar to rest pose" style={{marginLeft: '4px'}}>↺</button><span>{liveMode ? 'live translation is listening' : avatarState === 'signing' ? 'translation in progress' : avatarState === 'loading' ? 'loading avatar' : 'ready — words or A–Z fingerspelling'}</span><label style={{display:'flex',alignItems:'center',gap:'4px',fontSize:'11px',opacity:0.7,marginLeft:'auto'}} title="Animation speed">Speed<input type="range" min="0.5" max="3" step="0.25" value={speed} onChange={(e) => setSpeed(Number(e.target.value))} style={{width:'60px',accentColor:'currentColor'}} />{speed}×</label><span className="terminal-time">ISL</span></div>
+              <div className="quick-phrases" aria-label="Try a supported sign">
+                <button type="button" className="quick-phrases-arrow" onClick={() => scrollQuickPhrases(-1)} aria-label="Show previous signs"><ChevronLeft size={15} /></button>
+                <div ref={quickPhrasesRef} className="quick-phrases-track">
+                  {quickPhrases.map((word) => <button key={word} onClick={() => { setTranslation(word); setAvatarPhrase(word); setRequestId((current) => current + 1) }}>{word}</button>)}
+                </div>
+                <button type="button" className="quick-phrases-arrow" onClick={() => scrollQuickPhrases(1)} aria-label="Show more signs"><ChevronRight size={15} /></button>
               </div>
               <div className="terminal-footer"><span className="terminal-play">{avatarState === 'signing' ? <Square size={11} fill="currentColor" /> : <Play size={14} fill="currentColor" />}</span><span>{avatarState === 'signing' ? 'translation in progress' : avatarState === 'loading' ? 'loading avatar' : 'ready — words or A–Z fingerspelling'}</span><span className="terminal-time">ISL</span></div>
             </div>
@@ -277,7 +362,7 @@ export default function Page() {
 
       <section className="proof-band reveal"><div><strong>01</strong><span>shared language</span></div><div><strong>∞</strong><span>possibilities to connect</span></div><div><strong>100%</strong><span>human at the centre</span></div></section>
 
-      <section className="final-cta section-pad reveal" id="about"><div className="cta-symbol"><AudioLines size={28} /></div><p className="eyebrow">A more connected future</p><h2>Let&apos;s make room<br />for <em>every voice.</em></h2><p>We&apos;re early, curious, and building in the open.</p><a className="button button-coral" href="mailto:mpathak6207@gmail.com?subject=Yap%20%26%20Render%20hello">Say hello <ArrowRight size={17} /></a></section>
+      <section className="final-cta section-pad reveal" id="about"><div className="cta-symbol"><AudioLines size={28} /></div><p className="eyebrow">A more connected future</p><h2>Let&apos;s make room<br />for <em>every voice.</em></h2><p>We&apos;re early, curious, and building in the open.</p><button type="button" className="button button-coral" onClick={() => setAboutOpen(true)}>About Us <ArrowRight size={17} /></button></section>
 
       <footer className="footer"><a className="brand" href="#top" aria-label="Yap and Render home"><span className="brand-mark"><img src="/yap-render-logo-mark.png" alt="" /></span><span>yap &amp; render</span></a><span>Made for more ways to connect.</span><span>© 2026 Yap & Render</span></footer>
     </main>
