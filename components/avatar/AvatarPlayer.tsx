@@ -7,6 +7,7 @@ import * as words from './animations/words'
 import * as alphabets from './animations/alphabets'
 import { defaultPose } from './animations/defaultPose'
 import { textToGloss } from './textToGloss'
+import { createFaceLayer } from './humanLayer'
 
 type SignInstruction = [string, 'rotation', 'x' | 'y' | 'z', number, '+' | '-']
 type SignRuntime = {
@@ -133,7 +134,9 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
 
     let disposed = false
     const loader = new GLTFLoader()
-    const modelPath = model === 'human' ? '/models/brunette.glb' : '/models/ybot.glb'
+    // Both avatars are the same ybot rig. "Human" layers a procedural face and
+    // warm-toned armour on top at runtime; the model file is untouched.
+    const modelPath = '/models/ybot.glb'
     loader.load(modelPath, (gltf) => {
       if (disposed) return
       const avatar = gltf.scene
@@ -146,14 +149,21 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
       // above the canvas centre instead of against the top edge.
       avatar.position.y = -0.85
       scene.add(avatar)
+      if (model === 'human') {
+        applyWarmArmorColors(avatar)
+        const headBone = getAvatarBone(avatar, 'mixamorig:Head')
+        if (headBone) {
+          const faceLayer = createFaceLayer()
+          // Compensate for ybot's 0.01 rig scale and sit the head on the neck.
+          faceLayer.scale.set(13.5, 13.5, 13.5)
+          faceLayer.position.set(0, 2, 1)
+          headBone.add(faceLayer)
+        }
+      }
       // Animation tables author each gesture as a delta rotation from rest.
-      // YBot's rig ships in a pure identity T-pose, so writing that delta
-      // straight onto rotation.xyz happens to be correct. The human rig's
-      // rest pose is a real posed skeleton (arms down, fingers relaxed) with
-      // compound, non-identity rest rotations, so the delta must be composed
-      // onto each bone's own rest quaternion instead of added as raw Euler
-      // components (Euler component addition only holds near identity).
-      captureRestQuaternions(avatar, model)
+      // YBot's rig ships in a pure identity T-pose, so composing the delta onto
+      // each bone's captured rest quaternion reproduces the authored pose.
+      captureRestQuaternions(avatar)
       // Apply the existing default-pose instructions immediately so every new
       // instance starts clean. Keeping those instructions in the frame queue
       // allowed a switch or reset to display an intermediate bone position.
@@ -234,6 +244,74 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
   return <div ref={mountRef} className="avatar-canvas" aria-label="Animated Indian Sign Language avatar" />
 }
 
+// Applies colour only to the existing skinned robot mesh. No vertices, bones,
+// weights, or animation instructions are changed, so the ISL movements remain
+// exactly the same while the body adopts the requested warm armour palette.
+function applyWarmArmorColors(avatar: THREE.Object3D) {
+  const chestCream = new THREE.Color('#e2d3bc')
+  const warmBeige = new THREE.Color('#d4bea1')
+  const limbBeige = new THREE.Color('#c8b093')
+  const lowerBeige = new THREE.Color('#bfa88c')
+  const neckCream = new THREE.Color('#d9c7ae')
+  const jointCharcoal = new THREE.Color('#4a4641')
+
+  avatar.traverse((child) => {
+    if (!(child as THREE.Mesh).isMesh) return
+    const mesh = child as THREE.Mesh
+    const positions = mesh.geometry?.attributes.position
+    if (!positions) return
+
+    if (mesh.name === 'Alpha_Surface') {
+      const colors = new Float32Array(positions.count * 3)
+      for (let index = 0; index < positions.count; index += 1) {
+        const x = positions.getX(index)
+        const y = positions.getY(index)
+        const z = positions.getZ(index)
+        const isNeck = y > 1.48 && Math.abs(x) < 0.12 && z > -0.1
+        const isChest = y >= 1.18 && Math.abs(x) <= 0.38
+        const isWaistOrHip = y >= 0.78 && y < 1.18 && Math.abs(x) <= 0.36
+        const isArm = Math.abs(x) > 0.34 && y > 0.82
+        const isCalfOrFoot = y < 0.42
+        const color = isNeck
+          ? neckCream
+          : isChest
+            ? chestCream
+            : isWaistOrHip
+              ? warmBeige
+              : isArm
+                ? limbBeige
+                : isCalfOrFoot
+                  ? lowerBeige
+                  : warmBeige
+        colors[index * 3] = color.r
+        colors[index * 3 + 1] = color.g
+        colors[index * 3 + 2] = color.b
+      }
+      mesh.geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3))
+      mesh.material = new THREE.MeshStandardMaterial({
+        vertexColors: true,
+        roughness: 0.63,
+        metalness: 0.04,
+      })
+    }
+
+    if (mesh.name === 'Alpha_Joints') {
+      const colors = new Float32Array(positions.count * 3)
+      for (let index = 0; index < positions.count; index += 1) {
+        colors[index * 3] = jointCharcoal.r
+        colors[index * 3 + 1] = jointCharcoal.g
+        colors[index * 3 + 2] = jointCharcoal.b
+      }
+      mesh.geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3))
+      mesh.material = new THREE.MeshStandardMaterial({
+        vertexColors: true,
+        roughness: 0.72,
+        metalness: 0.07,
+      })
+    }
+  })
+}
+
 function getAvatarBone(avatar: THREE.Object3D, boneName: string) {
   // Animation tables use compact Mixamo names. YBot stores
   // `mixamorig:RightArm`; the Ready Player Me human stores `RightArm`.
@@ -255,22 +333,12 @@ function getAvatarBone(avatar: THREE.Object3D, boneName: string) {
   return undefined
 }
 
-function captureRestQuaternions(avatar: THREE.Object3D, model: 'default' | 'human') {
+function captureRestQuaternions(avatar: THREE.Object3D) {
   avatar.traverse((child) => {
     if (child.type !== 'Bone') return
     const userData = child.userData as BoneUserData
     userData.restQuaternion = child.quaternion.clone()
-    const compactName = child.name.replace(/^mixamorig:?/, '')
-    const isHumanWrist = model === 'human' && (compactName === 'LeftHand' || compactName === 'RightHand')
-    if (isHumanWrist) {
-      // The human GLB exports both palms facing upwards. Rotate each wrist
-      // toward the body so the palms read as relaxed, inward-facing hands.
-      const inwardTilt = compactName === 'LeftHand' ? Math.PI / 2 : -Math.PI / 2
-      const wristCorrection = new THREE.Quaternion().setFromEuler(new THREE.Euler(0.14, 0, inwardTilt))
-      userData.gestureRestQuaternion = userData.restQuaternion.clone().multiply(wristCorrection)
-    } else {
-      userData.gestureRestQuaternion = userData.restQuaternion.clone()
-    }
+    userData.gestureRestQuaternion = userData.restQuaternion.clone()
     userData.restPosition = child.position.clone()
     userData.restScale = child.scale.clone()
   })
@@ -314,21 +382,17 @@ function resetAvatar(runtime: SignRuntime, model: 'default' | 'human') {
 }
 
 function resolveInstructionForModel(
-  boneName: string,
-  axis: 'x' | 'y' | 'z',
+  _boneName: string,
+  _axis: 'x' | 'y' | 'z',
   target: number,
   direction: '+' | '-',
-  model: 'default' | 'human',
+  _model: 'default' | 'human',
 ): [number, '+' | '-'] {
-  // Brunette's upper-arm Z and forearm X axes face the opposite way to
-  // YBot's. Without this conversion the arms travel through the back of the
-  // torso or pull a raised signing hand down instead of up.
-  // Keep the authored tables in YBot coordinates and translate only at the
-  // human-rig boundary.
-  const isHumanUpperArm = axis === 'z' && /(?:LeftArm|RightArm)$/.test(boneName)
-  const isHumanForearm = axis === 'x' && /(?:LeftForeArm|RightForeArm)$/.test(boneName)
-  const needsMirror = model === 'human' && (isHumanUpperArm || isHumanForearm)
-  return needsMirror ? [-target, direction === '+' ? '-' : '+'] : [target, direction]
+  // Both avatars now run on the same ybot rig, so the authored YBot-coordinate
+  // tables apply verbatim. The brunette rig's mirrored upper-arm/forearm axes
+  // no longer exist; this hook stays as the single place to translate an
+  // authored instruction if another rig is ever added.
+  return [target, direction]
 }
 
 function enqueuePhrase(input: string, runtime: SignRuntime, append = false) {
