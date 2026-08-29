@@ -12,20 +12,23 @@ const finish = (ref) => {
 };
 
 /**
- * YES - Right thumbs-up held at chest height, the forearm giving a small nod.
+ * YES - Right thumbs-up held in front of the abdomen, angled up toward the
+ * viewer, giving two small forward jabs. Matches a natural human thumbs-up:
+ * upper arm hangs at the side, elbow tucked, forearm ~45 deg up-and-forward,
+ * fist forward of the belly with the thumb up and the fist's thumb-side to
+ * the viewer.
  *
- * The four fingers curl into a fist; the thumb is left at its natural rest
- * angle, which on this rig already points up out of the fist (verified live) —
- * no thumb-bone or wrist rotation is applied, so the wrist never turns.
- *   RightArm z  eases only from the +PI/3 rest to +PI/12 — a small lift, the
- *               fist sits around the chest, not up by the head
- *   RightForeArm z  bends the elbow to bring the fist up; the "nod" is a tiny
- *               extra bend (~8 deg) and return — the only moving part
+ * Bone axes measured live on the YBot rig:
+ *   RightForeArm y -> ~PI/2.4 swings the forearm forward toward the viewer
+ *   RightForeArm x -> -PI/5 tips the forearm up ~45 deg; the "jab" eases this
+ *                     toward 0 (fist pushes forward) and back — no rotation
+ *   RightHand   x -> -PI/3.5 rolls the closed fist so the thumb points up
+ * The thumb is left at its rest angle (already points up out of a fist here).
  */
 export const YES = (ref) => {
     let a = [];
-    // Stage 1: close the fist (thumb stays at rest = pointing up) and bring it
-    // up to chest height with a small forearm bend.
+    // Stage 1: close the fist, swing the forearm forward-and-up in front of the
+    // abdomen, roll the fist so the thumb points up toward the viewer.
     a.push(["mixamorigRightHandIndex1", "rotation", "z", Math.PI/2, "+"]);
     a.push(["mixamorigRightHandIndex2", "rotation", "z", Math.PI/2, "+"]);
     a.push(["mixamorigRightHandIndex3", "rotation", "z", Math.PI/2, "+"]);
@@ -39,33 +42,33 @@ export const YES = (ref) => {
     a.push(["mixamorigRightHandPinky2", "rotation", "z", Math.PI/2, "+"]);
     a.push(["mixamorigRightHandPinky3", "rotation", "z", Math.PI/2, "+"]);
 
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/10, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/12, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", 0, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "z", -Math.PI/2, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/7, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", -Math.PI/5, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/2.4, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "x", -Math.PI/3.5, "-"]);
     ref.animations.push(a);
 
-    // Nod 1 — a tiny extra forearm bend lifts the fist a little, head dips.
+    // Jab 1 — the fist eases forward toward the viewer, head dips. No rotation.
     a = [];
-    a.push(["mixamorigRightForeArm", "rotation", "z", -Math.PI/1.85, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", -Math.PI/9, "+"]);
     a.push(["mixamorigNeck", "rotation", "x", Math.PI/9, "+"]);
     ref.animations.push(a);
 
-    // Nod 1 Back
+    // Jab 1 Back
     a = [];
-    a.push(["mixamorigRightForeArm", "rotation", "z", -Math.PI/2, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", -Math.PI/5, "-"]);
     a.push(["mixamorigNeck", "rotation", "x", Math.PI/12, "-"]);
     ref.animations.push(a);
 
-    // Nod 2
+    // Jab 2
     a = [];
-    a.push(["mixamorigRightForeArm", "rotation", "z", -Math.PI/1.85, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", -Math.PI/9, "+"]);
     a.push(["mixamorigNeck", "rotation", "x", Math.PI/9, "+"]);
     ref.animations.push(a);
 
-    // Nod 2 Back
+    // Jab 2 Back
     a = [];
-    a.push(["mixamorigRightForeArm", "rotation", "z", -Math.PI/2, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", -Math.PI/5, "-"]);
     a.push(["mixamorigNeck", "rotation", "x", Math.PI/12, "-"]);
     ref.animations.push(a);
 
@@ -86,8 +89,9 @@ export const YES = (ref) => {
 
     a.push(["mixamorigRightArm", "rotation", "x", 0, "+"]);
     a.push(["mixamorigRightArm", "rotation", "z", Math.PI/3, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "z", 0, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", 0, "+"]);
     a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/1.5, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "x", 0, "+"]);
     a.push(["mixamorigNeck", "rotation", "x", Math.PI/12, "-"]);
     ref.animations.push(a);
 
@@ -345,11 +349,13 @@ export const WELCOME = (ref) => {
 };
 
 /**
- * GOOD - Right hand closes to a fist, thumb rolled up, raised with a nod.
+ * GOOD - Same as YES: a thumbs-up held in front of the abdomen, angled up
+ * toward the viewer, with two small forward jabs.
  */
 export const GOOD = (ref) => {
     let a = [];
-    // Stage 1: curl the four fingers into a fist (thumb stays extended).
+    // Stage 1: close the fist, swing the forearm forward-and-up in front of the
+    // abdomen, roll the fist so the thumb points up toward the viewer.
     a.push(["mixamorigRightHandIndex1", "rotation", "z", Math.PI/2, "+"]);
     a.push(["mixamorigRightHandIndex2", "rotation", "z", Math.PI/2, "+"]);
     a.push(["mixamorigRightHandIndex3", "rotation", "z", Math.PI/2, "+"]);
@@ -363,26 +369,34 @@ export const GOOD = (ref) => {
     a.push(["mixamorigRightHandPinky2", "rotation", "z", Math.PI/2, "+"]);
     a.push(["mixamorigRightHandPinky3", "rotation", "z", Math.PI/2, "+"]);
 
-    // Raise the fist in front of the chest. Same measured axes as HELLO:
-    // shoulder eases up (`RightArm` z toward 0), elbow bends via `RightForeArm`
-    // z, and the rest twist `RightForeArm` y is zeroed so the fist faces front.
     a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/7, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/10, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", 0, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "z", -Math.PI/2.1, "-"]);
-    a.push(["mixamorigRightHand", "rotation", "z", -Math.PI/6, "-"]); // tip the fist up
-    a.push(["mixamorigNeck", "rotation", "x", Math.PI/8, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", -Math.PI/5, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/2.4, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "x", -Math.PI/3.5, "-"]);
     ref.animations.push(a);
 
-    // Stage 2: two firm affirmative pushes forward.
+    // Jab 1 — the fist eases forward toward the viewer, head dips. No rotation.
     a = [];
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/5, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", -Math.PI/9, "+"]);
+    a.push(["mixamorigNeck", "rotation", "x", Math.PI/9, "+"]);
     ref.animations.push(a);
+
+    // Jab 1 Back
     a = [];
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/7, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", -Math.PI/5, "-"]);
+    a.push(["mixamorigNeck", "rotation", "x", Math.PI/12, "-"]);
     ref.animations.push(a);
+
+    // Jab 2
     a = [];
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/5, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", -Math.PI/9, "+"]);
+    a.push(["mixamorigNeck", "rotation", "x", Math.PI/9, "+"]);
+    ref.animations.push(a);
+
+    // Jab 2 Back
+    a = [];
+    a.push(["mixamorigRightForeArm", "rotation", "x", -Math.PI/5, "-"]);
+    a.push(["mixamorigNeck", "rotation", "x", Math.PI/12, "-"]);
     ref.animations.push(a);
 
     // Reset
@@ -402,9 +416,9 @@ export const GOOD = (ref) => {
 
     a.push(["mixamorigRightArm", "rotation", "x", 0, "+"]);
     a.push(["mixamorigRightArm", "rotation", "z", Math.PI/3, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "z", 0, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", 0, "+"]);
     a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/1.5, "+"]);
-    a.push(["mixamorigRightHand", "rotation", "z", 0, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "x", 0, "+"]);
     a.push(["mixamorigNeck", "rotation", "x", Math.PI/12, "-"]);
     ref.animations.push(a);
 
@@ -412,15 +426,12 @@ export const GOOD = (ref) => {
 };
 
 /**
- * BAD - Right fist raised then dropped, tipped down, with a disapproving
- * head shake.
+ * BAD - Same as NO: index finger up at shoulder level, palm toward the viewer,
+ * wagging side to side with a disapproving head shake.
  */
 export const BAD = (ref) => {
     let a = [];
-    // Stage 1: close the fist and raise it, wrist rolled so the thumb is down.
-    a.push(["mixamorigRightHandIndex1", "rotation", "z", Math.PI/2, "+"]);
-    a.push(["mixamorigRightHandIndex2", "rotation", "z", Math.PI/2, "+"]);
-    a.push(["mixamorigRightHandIndex3", "rotation", "z", Math.PI/2, "+"]);
+    // Stage 1: Index finger up, others curled
     a.push(["mixamorigRightHandMiddle1", "rotation", "z", Math.PI/2, "+"]);
     a.push(["mixamorigRightHandMiddle2", "rotation", "z", Math.PI/2, "+"]);
     a.push(["mixamorigRightHandMiddle3", "rotation", "z", Math.PI/2, "+"]);
@@ -430,30 +441,41 @@ export const BAD = (ref) => {
     a.push(["mixamorigRightHandPinky1", "rotation", "z", Math.PI/2, "+"]);
     a.push(["mixamorigRightHandPinky2", "rotation", "z", Math.PI/2, "+"]);
     a.push(["mixamorigRightHandPinky3", "rotation", "z", Math.PI/2, "+"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "x", Math.PI/3, "+"]);
+    a.push(["mixamorigRightHandThumb2", "rotation", "y", -Math.PI/4, "-"]);
 
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/8, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/9, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/10, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "z", 0, "-"]);
     a.push(["mixamorigRightForeArm", "rotation", "y", 0, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "z", -Math.PI/2.3, "-"]);
-    a.push(["mixamorigRightHand", "rotation", "z", Math.PI/6, "+"]); // tip the fist down
-    a.push(["mixamorigNeck", "rotation", "y", Math.PI/9, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "z", -Math.PI/1.95, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "x", -Math.PI/2, "-"]);
     ref.animations.push(a);
 
-    // Stage 2: throw the fist down while the head shakes "no".
+    // Wag Left
     a = [];
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/20, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "z", -Math.PI/4, "+"]);
-    a.push(["mixamorigNeck", "rotation", "y", -Math.PI/9, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "y", Math.PI/6, "+"]);
+    a.push(["mixamorigNeck", "rotation", "y", -Math.PI/8, "-"]);
     ref.animations.push(a);
+
+    // Wag Right
     a = [];
-    a.push(["mixamorigNeck", "rotation", "y", Math.PI/12, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "y", -Math.PI/6, "-"]);
+    a.push(["mixamorigNeck", "rotation", "y", Math.PI/8, "+"]);
+    ref.animations.push(a);
+
+    // Wag Left again
+    a = [];
+    a.push(["mixamorigRightHand", "rotation", "y", Math.PI/6, "+"]);
+    a.push(["mixamorigNeck", "rotation", "y", -Math.PI/8, "-"]);
+    ref.animations.push(a);
+
+    // Settle the hand centred, arm still up.
+    a = [];
+    a.push(["mixamorigRightHand", "rotation", "y", 0, "-"]);
     ref.animations.push(a);
 
     // Reset
     a = [];
-    a.push(["mixamorigRightHandIndex1", "rotation", "z", 0, "-"]);
-    a.push(["mixamorigRightHandIndex2", "rotation", "z", 0, "-"]);
-    a.push(["mixamorigRightHandIndex3", "rotation", "z", 0, "-"]);
     a.push(["mixamorigRightHandMiddle1", "rotation", "z", 0, "-"]);
     a.push(["mixamorigRightHandMiddle2", "rotation", "z", 0, "-"]);
     a.push(["mixamorigRightHandMiddle3", "rotation", "z", 0, "-"]);
@@ -463,13 +485,16 @@ export const BAD = (ref) => {
     a.push(["mixamorigRightHandPinky1", "rotation", "z", 0, "-"]);
     a.push(["mixamorigRightHandPinky2", "rotation", "z", 0, "-"]);
     a.push(["mixamorigRightHandPinky3", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "x", 0, "-"]);
+    a.push(["mixamorigRightHandThumb2", "rotation", "y", 0, "+"]);
 
     a.push(["mixamorigRightArm", "rotation", "x", 0, "+"]);
     a.push(["mixamorigRightArm", "rotation", "z", Math.PI/3, "+"]);
     a.push(["mixamorigRightForeArm", "rotation", "z", 0, "+"]);
     a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/1.5, "+"]);
-    a.push(["mixamorigRightHand", "rotation", "z", 0, "-"]);
-    a.push(["mixamorigNeck", "rotation", "y", 0, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "x", 0, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "y", 0, "-"]);
+    a.push(["mixamorigNeck", "rotation", "y", 0, "+"]);
     ref.animations.push(a);
 
     finish(ref);
