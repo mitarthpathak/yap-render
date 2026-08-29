@@ -8,6 +8,7 @@ import * as alphabets from './animations/alphabets'
 import { defaultPose } from './animations/defaultPose'
 import { textToGloss } from './textToGloss'
 import { createFaceLayer } from './humanLayer'
+import { looksPreTranslated } from '@/lib/islVocabulary'
 
 type SignInstruction = [string, 'rotation', 'x' | 'y' | 'z', number, '+' | '-']
 type SignRuntime = {
@@ -397,8 +398,16 @@ function resolveInstructionForModel(
 
 function enqueuePhrase(input: string, runtime: SignRuntime, append = false) {
   if (!append) runtime.animations = []
-  const { tokens } = textToGloss(input) as { tokens: string[] }
-  
+
+  // The page now resolves every phrase to canonical ISL gloss (Gemini online,
+  // rule-based offline) before it reaches here. When the input is already made
+  // of playable tokens, skip re-translation and play it verbatim — this keeps
+  // the 3D player dumb and fast. Raw English still falls through to textToGloss
+  // so direct callers and legacy paths keep working.
+  const tokens = looksPreTranslated(input)
+    ? input.trim().toUpperCase().split(/\s+/).filter(Boolean)
+    : (textToGloss(input) as { tokens: string[] }).tokens
+
   const queueNames = tokens.map(token => {
     const word = token.toUpperCase()
     if (word in wordAnimations) {

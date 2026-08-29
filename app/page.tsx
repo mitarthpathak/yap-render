@@ -1,7 +1,13 @@
 'use client'
 
-import { type FormEvent, useEffect, useRef, useState } from 'react'
+import { type FormEvent, useCallback, useEffect, useRef, useState } from 'react'
 import { AvatarPlayer } from '@/components/avatar/AvatarPlayer'
+import {
+  translateToGloss,
+  translateOffline,
+  TranslationAbortedError,
+  type TranslationMode,
+} from '@/lib/islTranslator'
 import {
   ArrowDownRight,
   ArrowRight,
@@ -69,6 +75,9 @@ export default function Page() {
   const [resetId, setResetId] = useState(0)
   const [speed, setSpeed] = useState(1)
   const [avatarState, setAvatarState] = useState<'loading' | 'ready' | 'signing'>('loading')
+  const [isTranslating, setIsTranslating] = useState(false)
+  const [translationMode, setTranslationMode] = useState<TranslationMode>('online')
+  const [translationEngine, setTranslationEngine] = useState<TranslationMode>('online')
   const [speechSupported, setSpeechSupported] = useState(false)
   const [isListening, setIsListening] = useState(false)
   const [liveMode, setLiveMode] = useState(false)
@@ -82,6 +91,63 @@ export default function Page() {
   const recognitionRef = useRef<InstanceType<SpeechRecognitionConstructor> | null>(null)
   const liveModeRef = useRef(false)
   const quickPhrasesRef = useRef<HTMLDivElement>(null)
+  const translateAbortRef = useRef<AbortController | null>(null)
+  const translationEngineRef = useRef<TranslationMode>('online')
+
+  // Hybrid translation trigger: resolve raw input to ISL gloss (Gemini when
+  // the engine toggle is "online", rule-based engine otherwise / on failure)
+  // and only then hand the clean gloss string to the avatar. A newer call
+  // aborts the previous fetch so fast typing and live speech never race.
+  const dispatchTranslation = useCallback(async (rawText: string) => {
+    const text = rawText.trim()
+    if (!text) return
+
+    translateAbortRef.current?.abort()
+    translateAbortRef.current = null
+
+    // Forced offline: skip the network entirely, resolve synchronously.
+    if (translationEngineRef.current === 'offline') {
+      const result = translateOffline(text)
+      setTranslationMode(result.mode)
+      setAvatarPhrase(result.glossText || text)
+      setRequestId((current) => current + 1)
+      return
+    }
+
+    const controller = new AbortController()
+    translateAbortRef.current = controller
+    setIsTranslating(true)
+
+    try {
+      const result = await translateToGloss(text, controller.signal)
+      if (controller.signal.aborted) return
+      setTranslationMode(result.mode)
+      setAvatarPhrase(result.glossText || text)
+      setRequestId((current) => current + 1)
+    } catch (error) {
+      if (!(error instanceof TranslationAbortedError)) {
+        console.warn('[ISL] translation dispatch failed:', error)
+      }
+    } finally {
+      if (translateAbortRef.current === controller) {
+        translateAbortRef.current = null
+        setIsTranslating(false)
+      }
+    }
+  }, [])
+
+  const chooseTranslationEngine = (engine: TranslationMode) => {
+    translationEngineRef.current = engine
+    setTranslationEngine(engine)
+    if (engine === 'offline') {
+      translateAbortRef.current?.abort()
+      translateAbortRef.current = null
+      setIsTranslating(false)
+    }
+    // Reset the resolved-mode indicator optimistically; the next translation
+    // corrects it to "AI unavailable" if the online call has to fall back.
+    setTranslationMode(engine)
+  }
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -135,8 +201,7 @@ export default function Page() {
         if (event.results[index].isFinal) finalChunk += event.results[index][0]?.transcript || ''
       }
       if (finalChunk.trim()) {
-        setAvatarPhrase(finalChunk.trim())
-        setRequestId((current) => current + 1)
+        void dispatchTranslation(finalChunk.trim())
       }
     }
     recognitionRef.current = recognition
@@ -145,13 +210,19 @@ export default function Page() {
       recognition.abort()
       recognitionRef.current = null
     }
-  }, [])
+  }, [dispatchTranslation])
 
   const runTranslation = () => {
-    if (translation.trim()) {
-      setAvatarPhrase(translation)
-      setRequestId((current) => current + 1)
-    }
+    void dispatchTranslation(translation)
+  }
+
+  // Quick-phrase chips are already canonical vocabulary, so translate them with
+  // the instant offline engine — no API round trip or loader needed.
+  const playQuickPhrase = (word: string) => {
+    setTranslation(word)
+    const { glossText } = translateOffline(word)
+    setAvatarPhrase(glossText || word)
+    setRequestId((current) => current + 1)
   }
 
   const toggleVoiceInput = () => {
@@ -312,6 +383,11 @@ export default function Page() {
               >
                 <AvatarPlayer phrase={avatarPhrase} requestId={requestId} model={avatarModel} appendToQueue={liveMode} stopId={stopId} resetId={resetId} speed={speed} onStateChange={setAvatarState} />
                 <span className="canvas-badge"><span className="live-dot" /> ISL AVATAR · {avatarState}</span>
+                <div className={isTranslating ? 'engine-selector is-busy' : 'engine-selector'} role="group" aria-label="Translation engine">
+                  <button type="button" className={translationEngine === 'online' ? 'is-selected' : ''} onClick={() => chooseTranslationEngine('online')} aria-pressed={translationEngine === 'online'} title="Translate with Gemini AI (falls back to the offline engine automatically)"><Sparkles size={10} /> AI</button>
+                  <button type="button" className={translationEngine === 'offline' ? 'is-selected' : ''} onClick={() => chooseTranslationEngine('offline')} aria-pressed={translationEngine === 'offline'} title="Translate with the built-in offline rule engine">Offline</button>
+                  <span className="engine-status" aria-live="polite">{isTranslating ? 'translating…' : translationEngine === 'offline' ? 'offline' : translationMode === 'online' ? 'online' : 'AI unavailable'}</span>
+                </div>
                 <div className="avatar-selector" role="group" aria-label="Choose avatar"><span>AVATAR</span><button type="button" className={avatarModel === 'default' ? 'is-selected' : ''} onClick={() => setAvatarModel('default')} aria-pressed={avatarModel === 'default'}>Default</button><button type="button" className={avatarModel === 'human' ? 'is-selected' : ''} onClick={() => setAvatarModel('human')} aria-pressed={avatarModel === 'human'}>Human</button></div>
               </div>
               <aside className="avatar-command-panel" aria-label="Avatar playback and sign commands">
@@ -322,7 +398,7 @@ export default function Page() {
                 </div>
                 <div className="avatar-command-actions"><button type="button" onClick={stopTranslation} className="terminal-play terminal-stop" aria-label="Stop translation" title="Stop translation"><Square size={11} fill="currentColor" /></button><button type="button" onClick={() => setResetId((c) => c + 1)} className="terminal-play terminal-stop" aria-label="Reset avatar" title="Reset avatar to rest pose"><span aria-hidden="true">↺</span></button><label className="avatar-speed" title="Animation speed">Speed<input type="range" min="0.5" max="3" step="0.25" value={speed} onChange={(e) => setSpeed(Number(e.target.value))} />{speed}×</label></div>
                 <div className="avatar-command-list" aria-label="Try a supported sign">
-                  {quickPhrases.map((word) => <button type="button" key={word} onClick={() => { setTranslation(word); setAvatarPhrase(word); setRequestId((current) => current + 1) }}>{word}</button>)}
+                  {quickPhrases.map((word) => <button type="button" key={word} onClick={() => playQuickPhrase(word)}>{word}</button>)}
                 </div>
               </aside>
               </div>
@@ -338,7 +414,7 @@ export default function Page() {
               <div className="quick-phrases" aria-label="Try a supported sign">
                 <button type="button" className="quick-phrases-arrow" onClick={() => scrollQuickPhrases(-1)} aria-label="Show previous signs"><ChevronLeft size={15} /></button>
                 <div ref={quickPhrasesRef} className="quick-phrases-track">
-                  {quickPhrases.map((word) => <button key={word} onClick={() => { setTranslation(word); setAvatarPhrase(word); setRequestId((current) => current + 1) }}>{word}</button>)}
+                  {quickPhrases.map((word) => <button key={word} onClick={() => playQuickPhrase(word)}>{word}</button>)}
                 </div>
                 <button type="button" className="quick-phrases-arrow" onClick={() => scrollQuickPhrases(1)} aria-label="Show more signs"><ChevronRight size={15} /></button>
               </div>
