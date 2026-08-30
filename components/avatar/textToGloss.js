@@ -74,30 +74,40 @@ export function getActionIdForGloss(token) {
   return Object.values(SUPPORTED_SIGNS).find((sign) => sign.token === token)?.actionId || null;
 }
 
-// Capture known signs in the order the speaker supplied them. It runs before
-// grammar reordering so conversational inputs such as "Hello, I need help"
-// reliably play HELLO followed by HELP. If no supported sign is present, the
-// established glossary/fingerspelling path below remains untouched.
-function detectSupportedSigns(sentence) {
+// Try to cover the WHOLE sentence with supported signs, in the order the
+// speaker supplied them (this runs before grammar reordering so "Hello, I need
+// help" plays HELLO -> NEED -> HELP). Returns the token list only when every
+// meaningful word resolves to a known sign; a partial hit (e.g. the lone "you"
+// in "bro what are you doing") returns null so the caller falls through to the
+// grammar + dictionary + fingerspelling path and no word is silently dropped.
+function coverSentenceWithSigns(sentence) {
   const normalized = sentence.toLowerCase().replace(/[^a-z]+/g, " ").trim();
-  if (!normalized) return [];
+  if (!normalized) return null;
+  const words = normalized.split(" ");
+  const covered = new Array(words.length).fill(false);
   const tokens = [];
-  let cursor = 0;
-  while (cursor < normalized.length) {
-    let found = null;
+
+  for (let index = 0; index < words.length;) {
+    let best = null;
     for (const phrase of SIGN_PHRASES) {
-      const start = normalized.indexOf(phrase, cursor);
-      if (start < 0) continue;
-      const before = start === 0 || normalized[start - 1] === " ";
-      const end = start + phrase.length;
-      const after = end === normalized.length || normalized[end] === " ";
-      if (before && after && (!found || start < found.start)) found = { phrase, start, end };
+      const parts = phrase.split(" ");
+      if (parts.length > words.length - index) continue;
+      const hit = parts.every((part, offset) => words[index + offset] === part);
+      if (hit && (!best || parts.length > best.length)) best = { phrase, length: parts.length };
     }
-    if (!found) break;
-    tokens.push(SUPPORTED_SIGNS[found.phrase].token);
-    cursor = found.end;
+    if (best) {
+      tokens.push(SUPPORTED_SIGNS[best.phrase].token);
+      for (let offset = 0; offset < best.length; offset += 1) covered[index + offset] = true;
+      index += best.length;
+    } else {
+      index += 1;
+    }
   }
-  return tokens;
+
+  for (let index = 0; index < words.length; index += 1) {
+    if (!covered[index] && !COVERAGE_SKIP_WORDS.has(words[index])) return null;
+  }
+  return tokens.length > 0 ? tokens : null;
 }
 
 // Common ISL Idiomatic and Compound Phrases
@@ -349,6 +359,14 @@ const STOPWORDS = new Set([
   "will", "shall", "would", "should", "could", "may", "might", "must", "can"
 ]);
 
+// Words that carry no ISL sign of their own, so `coverSentenceWithSigns` may
+// leave them uncovered and still treat the sentence as fully signed.
+const COVERAGE_SKIP_WORDS = new Set([
+  ...STOPWORDS,
+  "i", "me", "my", "mine", "we", "us", "our", "ours",
+  "hi", "hey", "yeah", "yep", "ok", "okay"
+]);
+
 /**
  * Expands contractions in text
  */
@@ -409,7 +427,16 @@ export function lemmatizeWord(word) {
  * Classifies a token into ISL grammatical role
  */
 function classifyToken(token) {
+  // Match closed-class words on the raw form first: lemmatization strips "-ing"
+  // ("morning" -> "morn") and "-ed", which would hide TIME/QUESTION/NEGATION
+  // words from these sets and mangle the fingerspelled fallback.
+  const raw = token.toLowerCase().replace(/[^a-z_]/g, "");
   let lemma = lemmatizeWord(token);
+
+  if (TIME_WORDS.has(raw)) return { role: "TIME", value: raw.toUpperCase() };
+  if (QUESTION_WORDS.has(raw)) return { role: "QUESTION", value: raw.toUpperCase() };
+  if (NEGATION_WORDS.has(raw)) return { role: "NEGATION", value: raw.toUpperCase() };
+  if (PRONOUNS.has(raw)) return { role: "SUBJECT", value: raw.toUpperCase() };
 
   if (TIME_WORDS.has(lemma)) return { role: "TIME", value: lemma.toUpperCase() };
   if (QUESTION_WORDS.has(lemma)) return { role: "QUESTION", value: lemma.toUpperCase() };
@@ -427,12 +454,7 @@ function classifyToken(token) {
 function convertSentenceToGloss(sentence) {
   let cleanSentence = sentence.trim().toUpperCase().replace(/[.,!]/g, "");
 
-  const detectedSigns = detectSupportedSigns(sentence);
-  if (detectedSigns.length > 0) {
-    return { tokens: detectedSigns, text: detectedSigns.join(" ") };
-  }
-
-  // 1. Check direct phrase match
+  // 1. Direct idiomatic phrase match (most specific, highest priority).
   if (PHRASE_DICTIONARY[cleanSentence]) {
     return {
       tokens: PHRASE_DICTIONARY[cleanSentence],
@@ -440,7 +462,15 @@ function convertSentenceToGloss(sentence) {
     };
   }
 
-  // 2. Expand contractions and tokenize
+  // 2. Whole-sentence supported-sign match. Only short-circuits when every
+  //    meaningful word maps to a known sign; partial hits fall through so the
+  //    grammar + dictionary + fingerspelling path can handle the rest.
+  const coveredSigns = coverSentenceWithSigns(sentence);
+  if (coveredSigns) {
+    return { tokens: coveredSigns, text: coveredSigns.join(" ") };
+  }
+
+  // 3. Expand contractions and tokenize
   let expanded = expandContractions(sentence.replace(/[?!.,]/g, " "));
   let rawTokens = expanded.split(/\s+/).filter(w => w.trim().length > 0);
 
@@ -470,7 +500,7 @@ function convertSentenceToGloss(sentence) {
     return { tokens, text: tokens.join(" ") };
   }
 
-  // 3. Filter stopwords (except when part of specific grammar)
+  // 4. Filter stopwords (except when part of specific grammar)
   let filtered = [];
   for (let t of rawTokens) {
     let lower = t.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -484,7 +514,7 @@ function convertSentenceToGloss(sentence) {
     return { tokens: [], text: "" };
   }
 
-  // 4. Categorize tokens
+  // 5. Categorize tokens
   let timeTokens = [];
   let subjectTokens = [];
   let objectTokens = [];
@@ -519,7 +549,7 @@ function convertSentenceToGloss(sentence) {
     }
   }
 
-  // 5. Synthesize ISL Word Order:
+  // 6. Synthesize ISL Word Order:
   // [TIME] -> [SUBJECT] -> [OBJECT] -> [OTHER / ADJ] -> [VERB] -> [NEGATION] -> [QUESTION]
   let glossTokens = [];
 
