@@ -114,8 +114,8 @@ function coverSentenceWithSigns(sentence) {
 const PHRASE_DICTIONARY = {
   "HOW ARE YOU": ["YOU", "HOW"],
   "HOW ARE YOU DOING": ["YOU", "HOW"],
-  "WHAT IS YOUR NAME": ["YOUR", "NAME", "WHAT"],
-  "WHAT'S YOUR NAME": ["YOUR", "NAME", "WHAT"],
+  "WHAT IS YOUR NAME": ["YOU", "NAME", "WHAT"],
+  "WHAT'S YOUR NAME": ["YOU", "NAME", "WHAT"],
   "WHERE DO YOU LIVE": ["YOU", "LIVE", "WHERE"],
   "WHERE ARE YOU FROM": ["YOU", "WHERE", "FROM"],
   "WHERE ARE YOU GOING": ["YOU", "GO", "WHERE"],
@@ -125,14 +125,14 @@ const PHRASE_DICTIONARY = {
   "GOOD AFTERNOON": ["GOOD", "AFTERNOON"],
   "GOOD EVENING": ["GOOD", "EVENING"],
   "GOOD NIGHT": ["GOOD", "NIGHT"],
-  "THANK YOU": ["THANK", "YOU"],
-  "THANK YOU VERY MUCH": ["THANK", "YOU"],
+  "THANK YOU": ["THANK_YOU"],
+  "THANK YOU VERY MUCH": ["THANK_YOU"],
   "PLEASE HELP ME": ["ME", "HELP", "PLEASE"],
   "HELP ME": ["ME", "HELP"],
   "HELP": ["HELP"],
   "PLEASE": ["PLEASE"],
   "SORRY": ["SORRY"],
-  "THANKS A LOT": ["THANK", "YOU"],
+  "THANKS A LOT": ["THANK_YOU"],
   "WELCOME": ["WELCOME"],
   "YOU ARE WELCOME": ["WELCOME"],
   "I AM SORRY": ["SORRY"],
@@ -574,9 +574,37 @@ function convertSentenceToGloss(sentence) {
   };
 }
 
+// The rig has one deictic point (YOU) and one PERSON sign; ISL disambiguates
+// person by where you point. English pronouns that would otherwise fingerspell
+// ("I" -> letter I, "ME" -> M E) are folded onto the nearest available sign so
+// the offline engine matches the online AI. Personal pronouns become a point;
+// possessives ("" below) are dropped, since a lone YOU sign for "my" would read
+// as "your".
+const PRONOUN_TO_SIGN = {
+  I: "YOU", ME: "YOU", MYSELF: "YOU", WE: "YOU", US: "YOU", OURSELVES: "YOU",
+  MY: "", MINE: "", OUR: "", OURS: "", YOUR: "", YOURS: "", YOURSELF: "", YOURSELVES: "",
+  HE: "PERSON", HIM: "PERSON", HIMSELF: "PERSON", SHE: "PERSON", HERSELF: "PERSON",
+  THEY: "PERSON", THEM: "PERSON", THEMSELVES: "PERSON",
+  HIS: "", HER: "", HERS: "", THEIR: "", THEIRS: "",
+};
+
+/**
+ * Final cleanup on a gloss token list: fold bare pronouns onto a playable sign
+ * (or drop possessives), and collapse runs of the same token (so "I love you"
+ * -> YOU YOU LOVE becomes YOU LOVE, not the avatar signing YOU twice).
+ */
+function normalizeGlossTokens(tokens) {
+  const out = [];
+  for (const token of tokens) {
+    const mapped = token in PRONOUN_TO_SIGN ? PRONOUN_TO_SIGN[token] : token;
+    if (mapped && out[out.length - 1] !== mapped) out.push(mapped);
+  }
+  return out;
+}
+
 /**
  * Main function: Converts multi-sentence text to ISL Gloss
- * 
+ *
  * @param {string} text - The input English sentence(s)
  * @returns {object} { glossText: string, tokens: string[], original: string, sentences: object[] }
  */
@@ -605,8 +633,9 @@ export function textToGloss(text) {
   for (let s of rawSentences) {
     let res = convertSentenceToGloss(s);
     if (res.tokens.length > 0) {
-      allTokens.push(...res.tokens);
-      sentenceResults.push(res);
+      const tokens = normalizeGlossTokens(res.tokens);
+      allTokens.push(...tokens);
+      sentenceResults.push({ ...res, tokens, text: tokens.join(" ") });
     }
   }
 

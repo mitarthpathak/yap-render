@@ -200,12 +200,13 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
           const delta = userData.delta ?? (userData.delta = { x: 0, y: 0, z: 0 })
           const [resolvedTarget, resolvedDirection] = resolveInstructionForModel(boneName, axis, target, direction, model)
           const value = delta[axis]
-          // The original step completed most poses in a few rendered frames.
-          // Many signs share a raised-hand preparation pose, so that speed made
-          // different signs look identical before their distinct hand/path
-          // movements were visible. A smaller step keeps each authored pose
-          // readable and makes the transition feel less robotic.
-          const step = 0.028 * speedRef.current
+          // Step size drives how fast a bone eases toward its authored target.
+          // Too small and long multi-stage signs (HELLO, SORRY, the meal
+          // compounds) drag; too large and the shared raised-hand preparation
+          // pose makes different signs look identical before their distinct
+          // movement is visible. 0.05 keeps each pose readable while roughly
+          // halving the runtime of the big signs.
+          const step = 0.05 * speedRef.current
           const inProgress = resolvedDirection === '+' ? value < resolvedTarget : value > resolvedTarget
           if (inProgress) {
             delta[axis] = resolvedDirection === '+' ? Math.min(value + step, resolvedTarget) : Math.max(value - step, resolvedTarget)
@@ -219,9 +220,9 @@ export function AvatarPlayer({ phrase, requestId, model = 'default', appendToQue
         }
         if (!frame.length) {
           queue.shift()
-          // Hold each authored key pose long enough for the user to perceive
-          // the sign's movement before progressing to the next one.
-          nextFrameAt = now + 360 / speedRef.current
+          // Brief hold on each authored key pose so the movement still reads,
+          // without the dead air that made every sign feel sluggish (was 360).
+          nextFrameAt = now + 170 / speedRef.current
         }
       }
       if (wasSigning && !queue.length) {
@@ -397,7 +398,14 @@ function resolveInstructionForModel(
 }
 
 function enqueuePhrase(input: string, runtime: SignRuntime, append = false) {
-  if (!append) runtime.animations = []
+  if (!append) {
+    // Snap the rig back to the neutral pose first. A sign the user interrupted
+    // mid-movement leaves bones partway through a gesture, and every sign is
+    // authored as deltas from rest — without this the next sign starts from a
+    // half-finished pose and can freeze on an unreachable target.
+    if (runtime.avatar) resetAvatar(runtime, runtime.model ?? 'default')
+    runtime.animations = []
+  }
 
   // The page now resolves every phrase to canonical ISL gloss (Gemini online,
   // rule-based offline) before it reaches here. When the input is already made
