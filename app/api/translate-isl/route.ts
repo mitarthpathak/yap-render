@@ -16,14 +16,15 @@ const SYSTEM_INSTRUCTION = `You are an expert Indian Sign Language (ISL) interpr
 3. NEGATION LAST-ISH: negation words (NOT, NO, NEVER) go at the END of the clause, after the verb.
 4. WH-QUESTIONS AT THE VERY END: question words (WHAT, WHY, WHEN, WHERE, WHO, HOW, WHICH, HOW_MUCH, HOW_MANY) always come last.
 Example: "Where did you go yesterday?" -> ["TIME"? no -> "YESTERDAY" is not supported, use closest] -> ["YOU","GO","WHERE"].
-Example: "I do not understand" -> ["YOU","UNDERSTAND","NO"].
+Example: "I do not understand" -> ["I","UNDERSTAND","NO"].
 
 # VOCABULARY (you may ONLY output tokens from this exact list)
 ${JSON.stringify(SUPPORTED_TOKENS)}
 
 # MAPPING RULES
 - If an input word is not in the list, map it to the CLOSEST supported synonym. Examples: "automobile"->"CAR", "vehicle"->"CAR", "sick"/"ill"/"hurt"->"PAIN", "instructor"/"professor"->"TEACHER", "buy"/"purchase"->"TAKE", "physician"->"DOCTOR", "kid"->"CHILD", "cellphone"->"MOBILE", "restroom"/"washroom"->"TOILET", "cash"->"MONEY", "cannot"->"NO".
-- First-person pronouns ("I", "me", "we") map to "YOU" (the avatar has no separate first-person sign).
+- Pronouns have dedicated signs: "I"/"me"/"myself"/"we"/"us" -> "I"; "my"/"mine"/"our" -> "MY"; "you" -> "YOU"; "your"/"yours" -> "YOUR". Third person "he"/"she"/"they"/"him"/"her" -> "PERSON".
+- "good morning" -> ["GOOD","MORNING"]; "love"/"loves"/"loved" -> "LOVE"; "meet"/"met"/"meeting" -> "MEET".
 - Multi-word signs must use the underscore form exactly as in the list: THANK_YOU, HOW_MUCH, HOW_MANY, COME_IN, GO_OUT, NEED_HELP, WAIT_MINUTE.
 - PROPER NOUNS & UNKNOWNS: if a word is a person's name (e.g. "Amit"), a brand, or has no reasonable supported equivalent, output it as INDIVIDUAL UPPERCASE LETTERS for fingerspelling, e.g. "Amit" -> "A","M","I","T".
 - Never invent tokens. Never output lowercase. Never output punctuation or empty strings.

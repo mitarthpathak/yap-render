@@ -63,7 +63,7 @@ const features = [
   { icon: Globe2, title: 'Reach more people', text: 'Make classrooms, clinics, and conversations feel open to everyone.' },
 ]
 
-const quickPhrases = ['YOU', 'HOME', 'TIME', 'PERSON', 'HELLO', 'HELP', 'THANK YOU', 'YES', 'NO', 'PLEASE', 'SORRY', 'WELCOME', 'GOOD', 'BAD', 'STOP', 'WAIT', 'COME', 'GO', 'WANT', 'NEED', 'LIKE', 'KNOW', 'UNDERSTAND', 'ASK', 'DRINK', 'EAT', 'WATER', 'GIVE', 'TAKE', 'SHOW', 'LOOK', 'SEE', 'LISTEN', 'TALK', 'START', 'FINISH', 'AGAIN', 'SLEEP', 'TOILET', 'DOCTOR', 'HOSPITAL', 'PAIN', 'SCHOOL', 'CLASS', 'TEACHER', 'STUDENT', 'BOOK']
+const quickPhrases = ['YOU', 'HOME', 'TIME', 'PERSON', 'HELLO', 'HELP', 'THANK YOU', 'YES', 'NO', 'PLEASE', 'SORRY', 'WELCOME', 'GOOD', 'BAD', 'STOP', 'WAIT', 'COME', 'GO', 'WANT', 'NEED', 'LIKE', 'KNOW', 'UNDERSTAND', 'ASK', 'DRINK', 'EAT', 'WATER', 'GIVE', 'TAKE', 'SHOW', 'LOOK', 'SEE', 'LISTEN', 'TALK', 'START', 'FINISH', 'AGAIN', 'SLEEP', 'TOILET', 'DOCTOR', 'HOSPITAL', 'PAIN', 'SCHOOL', 'CLASS', 'TEACHER', 'STUDENT', 'BOOK', 'I', 'MY', 'YOUR', 'MORNING', 'LOVE', 'MEET', 'NAME']
 
 export default function Page() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -93,14 +93,42 @@ export default function Page() {
   const quickPhrasesRef = useRef<HTMLDivElement>(null)
   const translateAbortRef = useRef<AbortController | null>(null)
   const translationEngineRef = useRef<TranslationMode>('online')
+  // Live streaming state: how many transcript words have already been handed to
+  // the avatar, and a promise chain that keeps chunk translations in spoken
+  // order even when the AI call for one chunk is slower than the next.
+  const liveCommittedRef = useRef(0)
+  const liveChainRef = useRef<Promise<void>>(Promise.resolve())
 
   // Hybrid translation trigger: resolve raw input to ISL gloss (Gemini when
   // the engine toggle is "online", rule-based engine otherwise / on failure)
   // and only then hand the clean gloss string to the avatar. A newer call
   // aborts the previous fetch so fast typing and live speech never race.
-  const dispatchTranslation = useCallback(async (rawText: string) => {
+  const dispatchTranslation = useCallback(async (rawText: string, options?: { append?: boolean }) => {
     const text = rawText.trim()
     if (!text) return
+
+    // Live streaming path: each 3-word chunk is queued behind the previous one
+    // so signs play in spoken order and a slow AI call can't be overtaken by a
+    // faster one for a later chunk. Chunks never abort each other, and the
+    // avatar appends (never resets) because <AvatarPlayer appendToQueue> is on.
+    if (options?.append) {
+      liveChainRef.current = liveChainRef.current.catch(() => {}).then(async () => {
+        if (!liveModeRef.current) return
+        if (translationEngineRef.current === 'offline') {
+          const result = translateOffline(text)
+          setTranslationMode(result.mode)
+          setAvatarPhrase(result.glossText || text)
+          setRequestId((current) => current + 1)
+          return
+        }
+        const result = await translateToGloss(text)
+        if (!liveModeRef.current) return
+        setTranslationMode(result.mode)
+        setAvatarPhrase(result.glossText || text)
+        setRequestId((current) => current + 1)
+      })
+      return
+    }
 
     translateAbortRef.current?.abort()
     translateAbortRef.current = null
@@ -183,7 +211,11 @@ export default function Page() {
     recognition.continuous = true
     recognition.interimResults = true
     recognition.lang = 'en-IN'
-    recognition.onstart = () => setIsListening(true)
+    recognition.onstart = () => {
+      setIsListening(true)
+      // A fresh recognition session restarts `event.results` from index 0.
+      liveCommittedRef.current = 0
+    }
     recognition.onend = () => {
       setIsListening(false)
       if (liveModeRef.current) window.setTimeout(() => {
@@ -194,15 +226,22 @@ export default function Page() {
     recognition.onresult = (event) => {
       let transcript = ''
       for (let index = 0; index < event.results.length; index += 1) transcript += event.results[index][0]?.transcript || ''
-      setTranslation(transcript.trim())
+      transcript = transcript.trim()
+      setTranslation(transcript)
       if (!liveModeRef.current) return
-      let finalChunk = ''
-      for (let index = event.resultIndex; index < event.results.length; index += 1) {
-        if (event.results[index].isFinal) finalChunk += event.results[index][0]?.transcript || ''
-      }
-      if (finalChunk.trim()) {
-        void dispatchTranslation(finalChunk.trim())
-      }
+
+      // Don't wait for the speaker to stop. As soon as 3 fresh words land on the
+      // interim transcript, translate that chunk and let the avatar queue it.
+      // Flush the trailing word(s) when the recognizer finalizes the phrase.
+      const words = transcript ? transcript.split(/\s+/) : []
+      const pending = words.length - liveCommittedRef.current
+      if (pending <= 0) return
+      const phraseComplete = Boolean(event.results[event.results.length - 1]?.isFinal)
+      if (pending < 3 && !phraseComplete) return
+
+      const chunk = words.slice(liveCommittedRef.current).join(' ')
+      liveCommittedRef.current = words.length
+      void dispatchTranslation(chunk, { append: true })
     }
     recognitionRef.current = recognition
 
@@ -236,6 +275,10 @@ export default function Page() {
     const nextMode = !liveMode
     liveModeRef.current = nextMode
     setLiveMode(nextMode)
+    if (nextMode) {
+      liveCommittedRef.current = 0
+      liveChainRef.current = Promise.resolve()
+    }
     const recognition = recognitionRef.current
     if (!recognition) return
     if (nextMode && !isListening) recognition.start()
@@ -245,6 +288,7 @@ export default function Page() {
   const stopTranslation = () => {
     liveModeRef.current = false
     setLiveMode(false)
+    liveCommittedRef.current = 0
     if (isListening) recognitionRef.current?.stop()
     setStopId((current) => current + 1)
   }

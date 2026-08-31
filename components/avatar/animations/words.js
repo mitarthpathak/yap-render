@@ -57,6 +57,9 @@ import { LIVE, WORK, PLAY, WALK, RUN, SIT, STAND, COME_IN, GO_OUT, OPEN, CLOSE, 
 // States & Feelings
 import { BECAUSE, HAPPY, SAD, ANGRY, SCARED, CONFUSED, TIRED, READY, LATE, EARLY, IMPORTANT } from './Words/States';
 
+// High-frequency words a first-time tester says (pronouns, LOVE, MEET, MORNING)
+import { I, MY, YOUR, LOVE, MEET, MORNING } from './Words/CommonExtra';
+
 
 // Grammatical / Inflection Aliases
 const HELPING = HELP;
@@ -164,6 +167,16 @@ const FEELING = FEEL;
 const FELT = FEEL;
 const BELIEVING = BELIEVE;
 const BELIEVED = BELIEVE;
+const ME = I;
+const MYSELF = I;
+const MINE = MY;
+const YOURS = YOUR;
+const LOVES = LOVE;
+const LOVED = LOVE;
+const LOVING = LOVE;
+const MEETS = MEET;
+const MET = MEET;
+const MEETING = MEET;
 
 // Master vocabulary list for UI and indexing
 var wordList = [
@@ -195,7 +208,9 @@ var wordList = [
     // States & Feelings
     'BECAUSE', 'HAPPY', 'SAD', 'ANGRY', 'SCARED', 'CONFUSED', 'TIRED', 'READY', 'LATE', 'EARLY', 'IMPORTANT',
     // Core Legacy
-    'TIME', 'PERSON', 'YOU'
+    'TIME', 'PERSON', 'YOU',
+    // High-frequency additions
+    'I', 'MY', 'YOUR', 'LOVE', 'MEET', 'MORNING'
 ];
 
 export {
@@ -235,6 +250,8 @@ export {
     LIVE, LIVING, LIVED, WORK, WORKING, WORKED, PLAY, PLAYING, PLAYED, WALK, WALKING, WALKED, RUN, RUNNING, RAN, SIT, SITTING, SAT, STAND, STANDING, STOOD, COME_IN, GO_OUT, OPEN, CLOSE, BRING, BRINGING, BROUGHT, SEND, SENDING, SENT, RECEIVE, RECEIVING, RECEIVED, KEEP, KEEPING, KEPT, USE, USING, USED, MAKE, MAKING, MADE, DO, DOING, DID, DONE, TRY, TRYING, TRIED, NEED_HELP, BEGIN, BEGINNING, BEGAN, BEGUN, CHANGE, CHANGING, CHANGED, WAIT_MINUTE, REMEMBER, REMEMBERING, REMEMBERED, FORGET, FORGETTING, FORGOT, FORGOTTEN, THINK, THINKING, THOUGHT, FEEL, FEELING, FELT, BELIEVE, BELIEVING, BELIEVED,
     // States & Feelings
     BECAUSE, HAPPY, SAD, ANGRY, SCARED, CONFUSED, TIRED, READY, LATE, EARLY, IMPORTANT,
+    // High-frequency additions
+    I, ME, MYSELF, MY, MINE, YOUR, YOURS, LOVE, LOVES, LOVED, LOVING, MEET, MEETS, MET, MEETING, MORNING,
     // List
     wordList
 };
