@@ -66,6 +66,15 @@ export const SUPPORTED_SIGNS = Object.freeze({
   thanks: { token: "THANK_YOU", actionId: "clip_thankyou", label: "THANK YOU" },
   yes: { token: "YES", actionId: "clip_yes", label: "YES" },
   no: { token: "NO", actionId: "clip_no", label: "NO" },
+  i: { token: "I", actionId: "clip_i", label: "I" },
+  me: { token: "I", actionId: "clip_i", label: "I" },
+  my: { token: "MY", actionId: "clip_my", label: "MY" },
+  mine: { token: "MY", actionId: "clip_my", label: "MY" },
+  your: { token: "YOUR", actionId: "clip_your", label: "YOUR" },
+  yours: { token: "YOUR", actionId: "clip_your", label: "YOUR" },
+  love: { token: "LOVE", actionId: "clip_love", label: "LOVE" },
+  meet: { token: "MEET", actionId: "clip_meet", label: "MEET" },
+  morning: { token: "MORNING", actionId: "clip_morning", label: "MORNING" },
 });
 
 const SIGN_PHRASES = Object.keys(SUPPORTED_SIGNS).sort((left, right) => right.length - left.length);
@@ -114,13 +123,14 @@ function coverSentenceWithSigns(sentence) {
 const PHRASE_DICTIONARY = {
   "HOW ARE YOU": ["YOU", "HOW"],
   "HOW ARE YOU DOING": ["YOU", "HOW"],
-  "WHAT IS YOUR NAME": ["YOU", "NAME", "WHAT"],
-  "WHAT'S YOUR NAME": ["YOU", "NAME", "WHAT"],
+  "WHAT IS YOUR NAME": ["YOUR", "NAME", "WHAT"],
+  "WHAT'S YOUR NAME": ["YOUR", "NAME", "WHAT"],
+  "MY NAME IS": ["MY", "NAME"],
   "WHERE DO YOU LIVE": ["YOU", "LIVE", "WHERE"],
   "WHERE ARE YOU FROM": ["YOU", "WHERE", "FROM"],
   "WHERE ARE YOU GOING": ["YOU", "GO", "WHERE"],
   "SEE YOU LATER": ["LATER", "YOU", "SEE"],
-  "NICE TO MEET YOU": ["MEET", "YOU", "NICE"],
+  "NICE TO MEET YOU": ["YOU", "MEET"],
   "GOOD MORNING": ["GOOD", "MORNING"],
   "GOOD AFTERNOON": ["GOOD", "AFTERNOON"],
   "GOOD EVENING": ["GOOD", "EVENING"],
@@ -574,15 +584,16 @@ function convertSentenceToGloss(sentence) {
   };
 }
 
-// The rig has one deictic point (YOU) and one PERSON sign; ISL disambiguates
-// person by where you point. English pronouns that would otherwise fingerspell
-// ("I" -> letter I, "ME" -> M E) are folded onto the nearest available sign so
-// the offline engine matches the online AI. Personal pronouns become a point;
-// possessives ("" below) are dropped, since a lone YOU sign for "my" would read
-// as "your".
+// First and second person now have dedicated signs: I (index to own chest),
+// MY (flat palm on chest), YOU (point out), YOUR (palm pushed out). Third person
+// still collapses to the single PERSON sign — ISL disambiguates by where you
+// point, which this rig can't do. Plural first person ("we"/"us") uses the "I"
+// point as the closest available sign; third-person possessives ("his"/"her")
+// stay dropped rather than fingerspelled mid-sentence.
 const PRONOUN_TO_SIGN = {
-  I: "YOU", ME: "YOU", MYSELF: "YOU", WE: "YOU", US: "YOU", OURSELVES: "YOU",
-  MY: "", MINE: "", OUR: "", OURS: "", YOUR: "", YOURS: "", YOURSELF: "", YOURSELVES: "",
+  I: "I", ME: "I", MYSELF: "I", WE: "I", US: "I", OURSELVES: "I",
+  MY: "MY", MINE: "MY", OUR: "MY", OURS: "MY",
+  YOUR: "YOUR", YOURS: "YOUR", YOURSELF: "YOUR", YOURSELVES: "YOUR",
   HE: "PERSON", HIM: "PERSON", HIMSELF: "PERSON", SHE: "PERSON", HERSELF: "PERSON",
   THEY: "PERSON", THEM: "PERSON", THEMSELVES: "PERSON",
   HIS: "", HER: "", HERS: "", THEIR: "", THEIRS: "",

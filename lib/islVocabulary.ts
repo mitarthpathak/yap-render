@@ -25,6 +25,7 @@ export const SUPPORTED_TOKENS: readonly string[] = [
   'SEND', 'RECEIVE', 'KEEP', 'USE', 'MAKE', 'DO', 'TRY', 'NEED_HELP', 'BEGIN', 'CHANGE', 'WAIT_MINUTE', 'REMEMBER',
   'FORGET', 'THINK', 'FEEL', 'BELIEVE', 'BECAUSE', 'HAPPY', 'SAD', 'ANGRY', 'SCARED', 'CONFUSED', 'TIRED', 'READY',
   'LATE', 'EARLY', 'IMPORTANT', 'YES', 'NO', 'THANK_YOU',
+  'I', 'MY', 'YOUR', 'LOVE', 'MEET', 'MORNING',
 ]
 
 export const SUPPORTED_TOKEN_SET: ReadonlySet<string> = new Set(SUPPORTED_TOKENS)
