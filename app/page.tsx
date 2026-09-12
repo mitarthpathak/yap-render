@@ -107,22 +107,14 @@ export default function Page() {
     const text = rawText.trim()
     if (!text) return
 
-    // Live streaming path: each 3-word chunk is queued behind the previous one
-    // so signs play in spoken order and a slow AI call can't be overtaken by a
-    // faster one for a later chunk. Chunks never abort each other, and the
-    // avatar appends (never resets) because <AvatarPlayer appendToQueue> is on.
+    // Live streaming path: each word-chunk is queued behind the previous one so
+    // signs play in spoken order. This always uses the instant offline engine
+    // — a Gemini round trip per word is exactly the multi-second stall live
+    // mode exists to avoid. The AI engine still applies to typed/Enter runs.
     if (options?.append) {
-      liveChainRef.current = liveChainRef.current.catch(() => {}).then(async () => {
+      liveChainRef.current = liveChainRef.current.catch(() => {}).then(() => {
         if (!liveModeRef.current) return
-        if (translationEngineRef.current === 'offline') {
-          const result = translateOffline(text)
-          setTranslationMode(result.mode)
-          setAvatarPhrase(result.glossText || text)
-          setRequestId((current) => current + 1)
-          return
-        }
-        const result = await translateToGloss(text)
-        if (!liveModeRef.current) return
+        const result = translateOffline(text)
         setTranslationMode(result.mode)
         setAvatarPhrase(result.glossText || text)
         setRequestId((current) => current + 1)
@@ -230,14 +222,13 @@ export default function Page() {
       setTranslation(transcript)
       if (!liveModeRef.current) return
 
-      // Don't wait for the speaker to stop. As soon as 3 fresh words land on the
-      // interim transcript, translate that chunk and let the avatar queue it.
-      // Flush the trailing word(s) when the recognizer finalizes the phrase.
+      // Don't wait for the speaker to stop, and don't wait for a batch either.
+      // The instant a fresh word lands on the interim transcript, translate it
+      // and let the avatar queue it, so the first word replaces the idle
+      // "YOU HOME" pose immediately instead of sitting in a buffer.
       const words = transcript ? transcript.split(/\s+/) : []
       const pending = words.length - liveCommittedRef.current
       if (pending <= 0) return
-      const phraseComplete = Boolean(event.results[event.results.length - 1]?.isFinal)
-      if (pending < 3 && !phraseComplete) return
 
       const chunk = words.slice(liveCommittedRef.current).join(' ')
       liveCommittedRef.current = words.length
