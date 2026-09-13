@@ -1,33 +1,34 @@
-# yap-render
+# Yap — Speech/Text to Indian Sign Language (ISL) Translator
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [v0](https://v0.app).
+Yap converts spoken or typed English/Hindi into Indian Sign Language, signed live by a 3D avatar in the browser. Built for SIH 2026.
 
-## Built with v0
+## How it works
 
-This repository is linked to a [v0](https://v0.app) project. You can continue developing by visiting the link below -- start new chats to make changes, and v0 will push commits directly to this repo. Every merge to `main` will automatically deploy.
-
-[Continue working on v0 →](https://v0.app/chat/projects/prj_ihKrjalxmZI2mVl5NCkE94rMZ0ZL)
+- **Input**: live speech (Web Speech API streaming) or typed text.
+- **Translation**: `app/api/translate-isl` calls Gemini to convert text into ISL gloss. If no `GEMINI_API_KEY` is set (or the API is unreachable), the app falls back to an offline rule-based gloss engine (`lib/islTranslator.ts`, `components/avatar/textToGloss.js`).
+- **Signing**: the gloss sequence drives a 3D avatar (`components/avatar/AvatarPlayer.tsx`) built with `react-three-fiber` / `three.js`, playing per-word/per-letter sign animations (including first-person signs and fingerspelling for unknown words).
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Optional: copy `.env.example` to `.env.local` and set `GEMINI_API_KEY` (get one at https://aistudio.google.com/apikey) to enable the online translator. Without it, the app still works via the offline fallback.
 
-## Learn More
+## Tech stack
 
-To learn more, take a look at the following resources:
+Next.js 16 · React 19 · TypeScript · react-three-fiber / three.js · Tailwind CSS · Google Gemini API
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-- [v0 Documentation](https://v0.app/docs) - learn about v0 and how to use it.
+## Project structure
+
+- `app/` — Next.js app router pages and API routes
+- `components/avatar/` — 3D avatar, sign animations, gloss/text conversion
+- `lib/` — ISL translation logic and vocabulary
+
+## Team
+
+Built by Mitarth Pathak, Navneet Singh, Gaurav Soni, Deep Panchal, and Nooren Qureshi.
