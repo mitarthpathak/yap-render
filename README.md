@@ -1,4 +1,4 @@
-# Yap — Speech/Text to Indian Sign Language (ISL) Translator
+# Yap & Render — Speech/Text to Indian Sign Language (ISL) Translator
 
 Yap converts spoken or typed English/Hindi into Indian Sign Language, signed live by a 3D avatar in the browser. Built for SIH 2026.
 
