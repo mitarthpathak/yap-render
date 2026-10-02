@@ -2,6 +2,12 @@
 
 Yap converts spoken or typed English/Hindi into Indian Sign Language, signed live by a 3D avatar in the browser. Built for SIH 2026.
 
+## Demo
+
+[![Yap & Render demo: typed English is translated to ISL gloss and signed by the 3D avatar](docs/demo/yap-render-demo.gif)](docs/demo/yap-render-demo.mp4)
+
+▶ **[Watch the full demo video (MP4, 2 min)](docs/demo/yap-render-demo.mp4)** — typing sentences, quick signs, A–Z fingerspelling for unknown words, switching to the Human avatar, and the full-canvas view. Recorded with the built-in offline translator (no Gemini key).
+
 ## How it works
 
 - **Input**: live speech (Web Speech API streaming) or typed text.
