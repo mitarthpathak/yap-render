@@ -1,0 +1,629 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Yap & Render Runtime Architecture",
+    "locale": "en",
+    "output": "yap-render.html",
+    "quality_profile": "showcase",
+    "animation": "trace",
+    "repository": {
+      "url": "https://github.com/mitarthpathak/yap-render",
+      "revision": "52fe61fd6c3e08f2060bf5f4e991c0002d6c8799"
+    },
+    "legend": {
+      "entries": {
+        "database": {
+          "label": "Static asset"
+        }
+      }
+    }
+  },
+  "components": [
+    {
+      "id": "speech",
+      "type": "external",
+      "label": "Web Speech API",
+      "sublabel": "SpeechRecognition · en-IN",
+      "pos": [
+        40,
+        40
+      ],
+      "size": [
+        176,
+        64
+      ],
+      "sources": [
+        {
+          "path": "app/page.tsx",
+          "line": 193,
+          "end_line": 222,
+          "label": "recognizer setup (en-IN), transcript fills input"
+        },
+        {
+          "path": "app/page.tsx",
+          "line": 258,
+          "end_line": 277,
+          "label": "Voice / Live start and stop"
+        },
+        {
+          "path": "app/page.tsx",
+          "line": 431,
+          "end_line": 446,
+          "label": "Voice / Live disabled without the API"
+        }
+      ]
+    },
+    {
+      "id": "live",
+      "type": "frontend",
+      "label": "Live word streamer",
+      "sublabel": "uncommitted words → chunks",
+      "pos": [
+        356,
+        40
+      ],
+      "size": [
+        176,
+        64
+      ],
+      "sources": [
+        {
+          "path": "app/page.tsx",
+          "line": 223,
+          "end_line": 236,
+          "label": "onresult live branch (interim words)"
+        },
+        {
+          "path": "app/page.tsx",
+          "line": 110,
+          "end_line": 123,
+          "label": "ordered liveChainRef"
+        },
+        {
+          "path": "app/page.tsx",
+          "line": 204,
+          "end_line": 216,
+          "label": "interim results, 220 ms restart"
+        }
+      ]
+    },
+    {
+      "id": "offline",
+      "type": "frontend",
+      "label": "Offline gloss engine",
+      "sublabel": "translateOffline → textToGloss",
+      "pos": [
+        672,
+        40
+      ],
+      "size": [
+        176,
+        64
+      ],
+      "sources": [
+        {
+          "path": "lib/islTranslator.ts",
+          "line": 26,
+          "end_line": 42,
+          "label": "translateOffline"
+        },
+        {
+          "path": "components/avatar/textToGloss.js",
+          "line": 616,
+          "end_line": 659,
+          "label": "textToGloss rule engine"
+        },
+        {
+          "path": "lib/islVocabulary.ts",
+          "line": 43,
+          "end_line": 63,
+          "label": "sanitizeTokens"
+        }
+      ]
+    },
+    {
+      "id": "controls",
+      "type": "frontend",
+      "label": "Translator UI",
+      "sublabel": "text input · Voice · Live",
+      "pos": [
+        40,
+        180
+      ],
+      "size": [
+        176,
+        64
+      ],
+      "sources": [
+        {
+          "path": "app/page.tsx",
+          "line": 440,
+          "end_line": 447,
+          "label": "input, Voice and Live buttons"
+        },
+        {
+          "path": "app/page.tsx",
+          "line": 245,
+          "end_line": 256,
+          "label": "Enter dispatches; chips call translateOffline"
+        },
+        {
+          "path": "app/page.tsx",
+          "line": 419,
+          "end_line": 436,
+          "label": "AvatarPlayer props, Default/Human, Stop, Speed"
+        }
+      ]
+    },
+    {
+      "id": "dispatch",
+      "type": "frontend",
+      "label": "dispatchTranslation",
+      "sublabel": "AI/Offline router",
+      "pos": [
+        356,
+        180
+      ],
+      "size": [
+        176,
+        64
+      ],
+      "sources": [
+        {
+          "path": "app/page.tsx",
+          "line": 102,
+          "end_line": 157,
+          "label": "dispatchTranslation"
+        },
+        {
+          "path": "app/page.tsx",
+          "line": 159,
+          "end_line": 170,
+          "label": "AI / Offline engine toggle"
+        },
+        {
+          "path": "app/page.tsx",
+          "line": 419,
+          "end_line": 419,
+          "label": "AvatarPlayer props"
+        }
+      ]
+    },
+    {
+      "id": "bridge",
+      "type": "frontend",
+      "label": "translateToGloss",
+      "sublabel": "fetch · 3 s timeout",
+      "pos": [
+        672,
+        180
+      ],
+      "size": [
+        176,
+        64
+      ],
+      "sources": [
+        {
+          "path": "lib/islTranslator.ts",
+          "line": 60,
+          "end_line": 109,
+          "label": "fetch with fallback"
+        },
+        {
+          "path": "lib/islTranslator.ts",
+          "line": 15,
+          "end_line": 16,
+          "label": "endpoint and 3 s timeout"
+        }
+      ]
+    },
+    {
+      "id": "avatar",
+      "type": "frontend",
+      "label": "AvatarPlayer",
+      "sublabel": "three.js rig · keyframe queue",
+      "pos": [
+        356,
+        320
+      ],
+      "size": [
+        176,
+        64
+      ],
+      "sources": [
+        {
+          "path": "components/avatar/AvatarPlayer.tsx",
+          "line": 60,
+          "end_line": 84,
+          "label": "phrase, stop and reset effects"
+        },
+        {
+          "path": "components/avatar/AvatarPlayer.tsx",
+          "line": 183,
+          "end_line": 234,
+          "label": "rAF easing loop"
+        },
+        {
+          "path": "components/avatar/AvatarPlayer.tsx",
+          "line": 400,
+          "end_line": 441,
+          "label": "enqueuePhrase"
+        }
+      ]
+    },
+    {
+      "id": "layout",
+      "type": "backend",
+      "label": "App Router shell",
+      "sublabel": "RootLayout · serves Page",
+      "pos": [
+        40,
+        480
+      ],
+      "size": [
+        176,
+        64
+      ],
+      "sources": [
+        {
+          "path": "app/layout.tsx",
+          "line": 18,
+          "end_line": 27,
+          "label": "RootLayout"
+        },
+        {
+          "path": "app/page.tsx",
+          "line": 1,
+          "end_line": 1,
+          "label": "client Page"
+        },
+        {
+          "path": "package.json",
+          "line": 5,
+          "end_line": 9,
+          "label": "next dev / build / start"
+        }
+      ]
+    },
+    {
+      "id": "glb",
+      "type": "database",
+      "label": "ybot.glb",
+      "sublabel": "public/models · both avatars",
+      "pos": [
+        356,
+        480
+      ],
+      "size": [
+        176,
+        64
+      ],
+      "sources": [
+        {
+          "path": "components/avatar/AvatarPlayer.tsx",
+          "line": 136,
+          "end_line": 141,
+          "label": "loads /models/ybot.glb"
+        },
+        {
+          "path": "public/models/ATTRIBUTION.md",
+          "line": 1,
+          "end_line": 10,
+          "label": "Mixamo Y Bot, both avatars"
+        }
+      ]
+    },
+    {
+      "id": "api",
+      "type": "backend",
+      "label": "/api/translate-isl",
+      "sublabel": "POST · needs GEMINI_API_KEY",
+      "pos": [
+        672,
+        480
+      ],
+      "size": [
+        176,
+        64
+      ],
+      "sources": [
+        {
+          "path": "app/api/translate-isl/route.ts",
+          "line": 37,
+          "end_line": 59,
+          "label": "key check and input validation"
+        },
+        {
+          "path": "app/api/translate-isl/route.ts",
+          "line": 77,
+          "end_line": 100,
+          "label": "parse, sanitize, error codes"
+        },
+        {
+          "path": ".env.example",
+          "line": 1,
+          "end_line": 5,
+          "label": "GEMINI_API_KEY"
+        }
+      ]
+    },
+    {
+      "id": "analytics",
+      "type": "external",
+      "label": "Vercel Analytics",
+      "sublabel": "@vercel/analytics · prod only",
+      "pos": [
+        40,
+        640
+      ],
+      "size": [
+        176,
+        64
+      ],
+      "sources": [
+        {
+          "path": "app/layout.tsx",
+          "line": 1,
+          "end_line": 1,
+          "label": "import Analytics"
+        },
+        {
+          "path": "app/layout.tsx",
+          "line": 23,
+          "end_line": 23,
+          "label": "mounted when NODE_ENV=production"
+        },
+        {
+          "path": "package.json",
+          "line": 15,
+          "end_line": 15,
+          "label": "@vercel/analytics"
+        }
+      ]
+    },
+    {
+      "id": "gemini",
+      "type": "external",
+      "label": "Google Gemini API",
+      "sublabel": "gemini-2.5-flash · JSON array",
+      "pos": [
+        672,
+        640
+      ],
+      "size": [
+        176,
+        64
+      ],
+      "sources": [
+        {
+          "path": "app/api/translate-isl/route.ts",
+          "line": 61,
+          "end_line": 75,
+          "label": "generateContent call"
+        },
+        {
+          "path": "app/api/translate-isl/route.ts",
+          "line": 9,
+          "end_line": 33,
+          "label": "model and ISL system prompt"
+        },
+        {
+          "path": "package.json",
+          "line": 12,
+          "end_line": 12,
+          "label": "@google/genai"
+        }
+      ]
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "Browser runtime",
+      "wraps": [
+        "speech",
+        "controls",
+        "live",
+        "dispatch",
+        "bridge",
+        "offline",
+        "avatar"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "Next.js server",
+      "wraps": [
+        "glb",
+        "layout",
+        "api"
+      ]
+    },
+    {
+      "kind": "region",
+      "label": "External cloud",
+      "wraps": [
+        "analytics",
+        "gemini"
+      ]
+    }
+  ],
+  "connections": [
+    {
+      "id": "speech-fills-input",
+      "from": "speech",
+      "to": "controls",
+      "label": "transcript fills input",
+      "labelAt": [
+        190,
+        142
+      ]
+    },
+    {
+      "id": "speech-streams-words",
+      "from": "speech",
+      "to": "live",
+      "label": "new words (Live on)"
+    },
+    {
+      "id": "typed-text",
+      "from": "controls",
+      "to": "dispatch",
+      "label": "Enter: typed text",
+      "variant": "emphasis"
+    },
+    {
+      "id": "live-append",
+      "from": "live",
+      "to": "dispatch",
+      "label": "append chunk (in order)"
+    },
+    {
+      "id": "ai-engine",
+      "from": "dispatch",
+      "to": "bridge",
+      "label": "AI engine (default)",
+      "variant": "emphasis"
+    },
+    {
+      "id": "post-translate",
+      "from": "bridge",
+      "to": "api",
+      "label": "POST /api/translate-isl",
+      "variant": "emphasis"
+    },
+    {
+      "id": "gemini-call",
+      "from": "api",
+      "to": "gemini",
+      "label": "generateContent (key set)",
+      "variant": "emphasis"
+    },
+    {
+      "id": "offline-fallback",
+      "from": "bridge",
+      "to": "offline",
+      "label": "fallback: no key · timeout · error",
+      "variant": "dashed"
+    },
+    {
+      "id": "offline-direct",
+      "from": "dispatch",
+      "to": "offline",
+      "label": "Offline / live chunk",
+      "fromSide": "right",
+      "toSide": "left"
+    },
+    {
+      "id": "gloss-to-avatar",
+      "from": "dispatch",
+      "to": "avatar",
+      "label": "gloss · requestId++",
+      "variant": "emphasis"
+    },
+    {
+      "id": "avatar-controls",
+      "from": "controls",
+      "to": "avatar",
+      "label": "chips · Stop/Reset · speed · model",
+      "fromSide": "bottom",
+      "toSide": "left"
+    },
+    {
+      "id": "load-model",
+      "from": "avatar",
+      "to": "glb",
+      "label": "GET /models/ybot.glb"
+    },
+    {
+      "id": "serve-page",
+      "from": "layout",
+      "to": "controls",
+      "label": "HTML + client bundle",
+      "fromSide": "top",
+      "toSide": "bottom",
+      "labelAt": [
+        182,
+        365
+      ]
+    },
+    {
+      "id": "mount-analytics",
+      "from": "layout",
+      "to": "analytics",
+      "label": "<Analytics/>: browser beacon (prod)",
+      "variant": "dashed"
+    }
+  ],
+  "cards": [
+    {
+      "dot": "rose",
+      "title": "Fallback and live rules",
+      "items": [
+        "translateToGloss falls back to the offline engine when the browser is offline, after a 3 s timeout, on a network or non-2xx response, or when no tokens survive; the engine badge then reads \"AI unavailable\" (lib/islTranslator.ts:64-104, page.tsx:424)",
+        "Without GEMINI_API_KEY the route returns 500 and never calls Gemini, so a setup without the key falls back on every AI run (route.ts:38-44, .env.example:5)",
+        "Live chunks always use the offline engine, queued in spoken order; quick-phrase chips call translateOffline directly and never pass through dispatchTranslation (page.tsx:110-123, 251-256)",
+        "Only a new typed run or switching to Offline aborts an in-flight AI call; chips, Live chunks and Stop do not, so a late AI result can still play (page.tsx:125-126, 142-146, 162-165, 279-285)",
+        "Voice only fills the input. Live signs interim words as they appear, so later recognizer corrections are not re-signed, and restarts recognition 220 ms after it ends with the word cursor reset (page.tsx:204-236)",
+        "Recognition comes from the browser vendor (Chrome sends the audio to Google speech servers); without the API, Voice and Live are disabled (page.tsx:198-201, 431-446)"
+      ]
+    },
+    {
+      "dot": "cyan",
+      "title": "Vocabulary sanitizing",
+      "items": [
+        "SUPPORTED_TOKENS (164 signs, lib/islVocabulary.ts:13-29) feeds the Gemini prompt, both translators and AvatarPlayer",
+        "sanitizeTokens keeps supported signs and single letters and splits any other token into A–Z letters (islVocabulary.ts:48-63)",
+        "Online tokens are sanitized twice: in the route (route.ts:86) and in the browser (islTranslator.ts:89)"
+      ]
+    },
+    {
+      "dot": "emerald",
+      "title": "ISL grammar rules",
+      "items": [
+        "textToGloss tries a phrase dictionary, then a whole-sentence sign match, then drops stopwords, lemmatizes and reorders (textToGloss.js:464-585)",
+        "Order: TIME, SUBJECT, OBJECT, other/adjective, VERB, NEGATION, QUESTION (textToGloss.js:562-572)",
+        "Pronouns: I/me/we become I, my/our MY, your YOUR, he/she/they PERSON; his/her/their are dropped; it/this/that pass through and are fingerspelled (textToGloss.js:587-614, islVocabulary.ts:54-60)",
+        "Gemini gets the same word-order rules (TIME, SOV, negation, WH last) in SYSTEM_INSTRUCTION, with temperature 0 and a JSON string-array schema; its pronoun rule differs and maps him/her to PERSON (route.ts:11-33, 61-75)"
+      ]
+    },
+    {
+      "dot": "violet",
+      "title": "Fingerspelling",
+      "items": [
+        "Names and words outside the vocabulary become single letters in sanitizeTokens; the Gemini prompt also asks for letters (route.ts:29)",
+        "AvatarPlayer plays a words.js sign when one is exported, otherwise one A–Z animation per letter (AvatarPlayer.tsx:432-440)",
+        "A phrase that is not already playable gloss is re-run through textToGloss inside AvatarPlayer (AvatarPlayer.tsx:415-417)"
+      ]
+    },
+    {
+      "dot": "amber",
+      "title": "Avatar timing and easing",
+      "items": [
+        "Each animation frame moves a bone 0.05 × speed rad toward its target, then holds 170 / speed ms per keyframe (AvatarPlayer.tsx:209-225)",
+        "Speed slider 0.5–3 (page.tsx:434, 448); Stop clears the queue, Reset snaps to defaultPose, Live mode appends instead of resetting (AvatarPlayer.tsx:60-84, 400-408)",
+        "Default and Human both load ybot.glb; Human adds vertex colours and a procedural face (AvatarPlayer.tsx:138-162)"
+      ]
+    },
+    {
+      "dot": "slate",
+      "title": "Deployment: Docker and Vercel",
+      "items": [
+        "Dockerfile: node:20-alpine builder runs npm install and next build; the runner runs next start on port 3000",
+        ".dockerignore excludes .env*, so GEMINI_API_KEY must be supplied when the container runs",
+        "RootLayout renders the client <Analytics/> component only when NODE_ENV is production; the browser then loads /_vercel/insights/script.js and sends the beacons (layout.tsx:23)",
+        "The Docker runner also sets NODE_ENV=production, but nothing in the app serves /_vercel, so analytics stays inert there; the repo has no vercel.json (Dockerfile:12)",
+        "public/models/brunette.glb is still shipped in public/ but no code loads it"
+      ]
+    },
+    {
+      "dot": "orange",
+      "title": "Local-only account",
+      "items": [
+        "Sign in and sign up write {name, email} to localStorage key yap-render-account (page.tsx:296-313)",
+        "The password field is required but never stored or checked; no server call is made"
+      ]
+    }
+  ]
+}
