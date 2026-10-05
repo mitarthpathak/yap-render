@@ -220,47 +220,73 @@ export const DOCTOR = (ref) => {
 };
 
 /**
- * HOSPITAL - Right index finger draws a red cross on upper left shoulder
+ * HOSPITAL (ISL) - the "red cross" sign: the dominant index finger draws a
+ * plus sign on the upper arm of the non-dominant arm.
+ * - Left (non-dominant) arm: lifted slightly forward, elbow bent, forearm
+ *   across the front of the body, so the upper arm is presented to the viewer.
+ * - Right (dominant) hand: index-finger handshape (middle, ring, pinky curled,
+ *   thumb folded over them), palm down, fingertip resting on the front/top of
+ *   the left upper arm between shoulder and elbow.
+ * - Movement: one stroke down the length of the upper arm (~5 cm), the finger
+ *   lifts, then one stroke across the arm (~5 cm) through the middle of the
+ *   first one - a "+" on the sleeve - then both arms return to rest.
+ * Every key pose keeps the fingertip on the arm surface (contact <= 1 cm) and
+ * the right forearm clear of the chest.
  */
 export const HOSPITAL = (ref) => {
-    let a = [];
-    // Stage 1: Right index to left upper arm/shoulder
-    a.push(["mixamorigRightHandMiddle1", "rotation", "z", Math.PI/2, "+"]);
-    a.push(["mixamorigRightHandRing1", "rotation", "z", Math.PI/2, "+"]);
-    a.push(["mixamorigRightHandPinky1", "rotation", "z", Math.PI/2, "+"]);
-    a.push(["mixamorigRightHandThumb1", "rotation", "x", Math.PI/3, "+"]);
+    // Track the current delta of every axis used so each instruction gets the
+    // correct '+'/'-' direction (a wrong flag silently drops the instruction).
+    const cur = {
+        "RightArm.z": Math.PI/3, "RightForeArm.y": Math.PI/1.5,
+        "LeftArm.z": -Math.PI/3, "LeftForeArm.y": -Math.PI/1.5,
+    };
+    const key = (targets) => {
+        const a = [];
+        for (const [k, v] of Object.entries(targets)) {
+            const from = cur[k] ?? 0;
+            if (Math.abs(v - from) < 1e-6) continue;
+            const [bone, axis] = k.split(".");
+            a.push(["mixamorig" + bone, "rotation", axis, v, v > from ? "+" : "-"]);
+            cur[k] = v;
+        }
+        ref.animations.push(a);
+    };
 
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/3.5, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/6, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/4, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI/2.5, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "z", Math.PI/4, "+"]); // Reach to left shoulder
-    ref.animations.push(a);
-
-    // Stroke 1: Vertical down
-    a = [];
-    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI/3, "-"]);
-    ref.animations.push(a);
-
-    // Stroke 2: Horizontal across
-    a = [];
-    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI/2.8, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "z", Math.PI/5, "-"]);
-    ref.animations.push(a);
-
-    // Reset
-    a = [];
-    a.push(["mixamorigRightHandMiddle1", "rotation", "z", 0, "-"]);
-    a.push(["mixamorigRightHandRing1", "rotation", "z", 0, "-"]);
-    a.push(["mixamorigRightHandPinky1", "rotation", "z", 0, "-"]);
-    a.push(["mixamorigRightHandThumb1", "rotation", "x", 0, "-"]);
-
-    a.push(["mixamorigRightArm", "rotation", "x", 0, "+"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/3, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", 0, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/1.5, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "z", 0, "-"]);
-    ref.animations.push(a);
+    // 1. Present the left upper arm (shoulder flexed forward, forearm pointing
+    //    forward-down); the right hand forms the index handshape and the
+    //    fingertip lands on the upper (shoulder) end of the vertical stroke.
+    key({
+        "LeftArm.x": -1.0, "LeftArm.z": -1.1, "LeftForeArm.y": -0.6, "LeftForeArm.x": 0.6,
+        "RightHandMiddle1.z": Math.PI/2, "RightHandMiddle2.z": Math.PI/2, "RightHandMiddle3.z": Math.PI/2.5,
+        "RightHandRing1.z": Math.PI/2, "RightHandRing2.z": Math.PI/2, "RightHandRing3.z": Math.PI/2.5,
+        "RightHandPinky1.z": Math.PI/2, "RightHandPinky2.z": Math.PI/2, "RightHandPinky3.z": Math.PI/2.5,
+        "RightHandThumb1.x": Math.PI/3, "RightHandThumb2.y": -Math.PI/3,
+        "RightArm.x": -0.95, "RightArm.y": 1.27, "RightArm.z": 1.29, "RightForeArm.y": 1.73,
+        "RightHand.x": 0.58, "RightHand.y": 0.58, "RightHand.z": 0.17,
+    });
+    // 2. Vertical stroke: slide ~6 cm down the upper arm toward the elbow.
+    key({ "RightArm.x": -1.01, "RightArm.y": 1.30, "RightArm.z": 1.33, "RightForeArm.y": 1.71, "RightHand.x": 0.80, "RightHand.y": 0.49, "RightHand.z": 0.22 });
+    // 3. Lift the fingertip (~3 cm) off the sleeve.
+    key({ "RightArm.x": -1.05, "RightArm.y": 1.24, "RightArm.z": 1.30, "RightForeArm.y": 1.66, "RightHand.x": 0.70, "RightHand.y": 0.59, "RightHand.z": 0.26 });
+    // 4. Touch down on the inner side of the arm, midway along the first line.
+    key({ "RightArm.x": -0.96, "RightArm.y": 1.26, "RightArm.z": 1.27, "RightForeArm.y": 1.73, "RightHand.x": 0.69, "RightHand.y": 0.68, "RightHand.z": 0.30 });
+    // 5. Horizontal stroke (~5 cm) across the arm, crossing the first line.
+    key({ "RightArm.x": -1.13, "RightArm.y": 1.28, "RightArm.z": 1.50, "RightHand.x": 0.55, "RightHand.y": 0.38, "RightHand.z": 0.31 });
+    // 6. Release: the right hand moves forward and away from the left arm
+    //    (so it does not swing up past the chin) while the left arm lowers.
+    key({
+        "RightArm.x": -0.5, "RightArm.y": 0.5, "RightArm.z": 1.2, "RightForeArm.y": 1.5,
+        "RightHand.x": 0, "RightHand.y": 0, "RightHand.z": 0,
+        "LeftArm.x": 0, "LeftArm.z": -Math.PI/3, "LeftForeArm.y": -Math.PI/1.5, "LeftForeArm.x": 0,
+    });
+    // 7. Back to the rest pose.
+    key({
+        "RightHandMiddle1.z": 0, "RightHandMiddle2.z": 0, "RightHandMiddle3.z": 0,
+        "RightHandRing1.z": 0, "RightHandRing2.z": 0, "RightHandRing3.z": 0,
+        "RightHandPinky1.z": 0, "RightHandPinky2.z": 0, "RightHandPinky3.z": 0,
+        "RightHandThumb1.x": 0, "RightHandThumb2.y": 0,
+        "RightArm.x": 0, "RightArm.y": 0, "RightArm.z": Math.PI/3, "RightForeArm.y": Math.PI/1.5,
+    });
 
     finish(ref);
 };
