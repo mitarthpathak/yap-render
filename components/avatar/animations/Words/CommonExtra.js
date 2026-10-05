@@ -162,36 +162,61 @@ export const MY = (ref) => {
 };
 
 /**
- * YOUR - open flat hand rises to shoulder height, palm turned forward, then
- * pushes out toward the person addressed. NO's arm axes with a lighter elbow
- * bend so the arm reaches out instead of folding up beside the head.
+ * YOUR (ISL) - flat open hand (fingers extended and together, thumb held in
+ * beside the index), palm facing the person addressed and fingers up, raised
+ * in front of the right chest and pushed forward toward that person twice
+ * (push - draw back - push).
+ * Distinct from YOU, which points the index finger at the person.
  */
 export const YOUR = (ref) => {
+    // Flat hand up in front of the right chest, palm turned toward the viewer.
     let a = [];
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/4, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "z", 0, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", 0, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI/6, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "z", -Math.PI/5, "-"]);
-    a.push(["mixamorigRightHand", "rotation", "x", -Math.PI/2, "-"]);
-    a.push(["mixamorigNeck", "rotation", "x", Math.PI/10, "+"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "y", -0.4, "-"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "z", -0.4, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "x", -0.16, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 0.40, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "z", 0.99, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", 0.12, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", 1.73, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "z", -0.02, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "x", 1.30, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "y", -0.33, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "z", -0.85, "-"]);
     ref.animations.push(a);
 
-    // Push the palm out toward the person.
+    // Push the palm out toward the person (~10 cm), draw back, push again.
     a = [];
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/2.6, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "z", -Math.PI/9, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "x", -0.46, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 0.59, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", 1.26, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "z", -0.92, "-"]);
+    ref.animations.push(a);
+    a = [];
+    a.push(["mixamorigRightArm", "rotation", "x", -0.26, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 0.46, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", 1.58, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "z", -0.87, "+"]);
+    ref.animations.push(a);
+    a = [];
+    a.push(["mixamorigRightArm", "rotation", "x", -0.46, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 0.59, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", 1.26, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "z", -0.92, "-"]);
     ref.animations.push(a);
 
-    // Reset.
+    // Reset to the shared rest pose.
     a = [];
+    a.push(["mixamorigRightHandThumb1", "rotation", "y", 0, "+"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "z", 0, "+"]);
     a.push(["mixamorigRightArm", "rotation", "x", 0, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 0, "-"]);
     a.push(["mixamorigRightArm", "rotation", "z", Math.PI/3, "+"]);
     a.push(["mixamorigRightForeArm", "rotation", "x", 0, "-"]);
     a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/1.5, "+"]);
     a.push(["mixamorigRightForeArm", "rotation", "z", 0, "+"]);
-    a.push(["mixamorigRightHand", "rotation", "x", 0, "+"]);
-    a.push(["mixamorigNeck", "rotation", "x", Math.PI/12, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "x", 0, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "y", 0, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "z", 0, "+"]);
     ref.animations.push(a);
     finish(ref);
 };
