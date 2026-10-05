@@ -225,46 +225,62 @@ export const PLEASE = (ref) => {
 };
 
 /**
- * SORRY - Right closed fist ('A' hand) held flat on the centre of the chest,
- * rubbed in a circle, with an apologetic head bow. (ASL/ISL SORRY.)
- * Solved numerically: the fist sits at world y ~0.54, x ~0, z ~0.10 - on the
- * sternum - and the six circle frames trace a loop ~7 cm across on the chest.
+ * SORRY - ISL "sorry": right closed fist ('A' hand: fingers curled into the
+ * palm, thumb resting up along the index) placed on the centre of the chest,
+ * palm side against the chest, knuckles pointing across to the left and the
+ * back of the hand toward the viewer. The fist rubs two small clockwise
+ * circles (signer's view: top -> out -> down -> in) on the sternum while the
+ * head bows slightly in apology, then the hand returns to rest.
+ * Measured (cm): fist on the chest at wrist ~[-2,50,24], index knuckles
+ * ~[4,54,20]; circle top ~y53, bottom ~y48, out ~x-5, in ~x0.
  */
 export const SORRY = (ref) => {
     let a = [];
-    // Stage 1: closed fist to the centre of the chest.
+    // Stage 1: form the 'A' fist and bring it onto the chest (top of circle).
     a.push(["mixamorigRightHandIndex1", "rotation", "z", Math.PI/2, "+"]);
     a.push(["mixamorigRightHandIndex2", "rotation", "z", Math.PI/2, "+"]);
-    a.push(["mixamorigRightHandIndex3", "rotation", "z", Math.PI/2, "+"]);
+    a.push(["mixamorigRightHandIndex3", "rotation", "z", Math.PI/3, "+"]);
     a.push(["mixamorigRightHandMiddle1", "rotation", "z", Math.PI/2, "+"]);
     a.push(["mixamorigRightHandMiddle2", "rotation", "z", Math.PI/2, "+"]);
-    a.push(["mixamorigRightHandMiddle3", "rotation", "z", Math.PI/2, "+"]);
+    a.push(["mixamorigRightHandMiddle3", "rotation", "z", Math.PI/3, "+"]);
     a.push(["mixamorigRightHandRing1", "rotation", "z", Math.PI/2, "+"]);
     a.push(["mixamorigRightHandRing2", "rotation", "z", Math.PI/2, "+"]);
-    a.push(["mixamorigRightHandRing3", "rotation", "z", Math.PI/2, "+"]);
+    a.push(["mixamorigRightHandRing3", "rotation", "z", Math.PI/3, "+"]);
     a.push(["mixamorigRightHandPinky1", "rotation", "z", Math.PI/2, "+"]);
     a.push(["mixamorigRightHandPinky2", "rotation", "z", Math.PI/2, "+"]);
-    a.push(["mixamorigRightHandPinky3", "rotation", "z", Math.PI/2, "+"]);
-    a.push(["mixamorigRightHandThumb1", "rotation", "x", Math.PI/3, "+"]);
-
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/1.3, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "y", -Math.PI/2.5, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/8, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI/6, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/4, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "z", Math.PI/1.2, "+"]);
-    a.push(["mixamorigRightHand", "rotation", "x", -Math.PI/6, "-"]);
-
-    a.push(["mixamorigNeck", "rotation", "x", Math.PI/7, "+"]);
+    a.push(["mixamorigRightHandPinky3", "rotation", "z", Math.PI/3, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "x", -0.53, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 0.95, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "z", 1.15, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", 1.75, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "x", -0.7, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "z", 0.65, "+"]);
+    a.push(["mixamorigNeck", "rotation", "x", Math.PI/8, "+"]);
     ref.animations.push(a);
 
-    // Circle rub on the chest - 1.5 loops (top -> right -> bottom -> left).
-    a = []; a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/1.2, "-"]); ref.animations.push(a);
-    a = []; a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/1.3, "+"]); a.push(["mixamorigRightArm", "rotation", "y", -Math.PI/2.05, "-"]); ref.animations.push(a);
-    a = []; a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/1.42, "+"]); a.push(["mixamorigRightArm", "rotation", "y", -Math.PI/2.5, "+"]); ref.animations.push(a);
-    a = []; a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/1.3, "-"]); a.push(["mixamorigRightArm", "rotation", "y", -Math.PI/3.2, "+"]); ref.animations.push(a);
-    a = []; a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/1.2, "-"]); a.push(["mixamorigRightArm", "rotation", "y", -Math.PI/2.5, "-"]); ref.animations.push(a);
-    a = []; a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/1.3, "+"]); a.push(["mixamorigRightArm", "rotation", "y", -Math.PI/2.05, "-"]); ref.animations.push(a);
+    // Two small clockwise circles on the chest: out -> down -> in -> up.
+    for (let loop = 0; loop < 2; loop++) {
+        a = []; // out (avatar's right)
+        a.push(["mixamorigRightArm", "rotation", "x", -0.45, "+"]);
+        a.push(["mixamorigRightArm", "rotation", "y", 0.84, "-"]);
+        a.push(["mixamorigRightHand", "rotation", "z", 0.85, "+"]);
+        ref.animations.push(a);
+        a = []; // down
+        a.push(["mixamorigRightArm", "rotation", "x", -0.37, "+"]);
+        a.push(["mixamorigRightArm", "rotation", "y", 0.95, "+"]);
+        a.push(["mixamorigRightHand", "rotation", "z", 0.6, "-"]);
+        ref.animations.push(a);
+        a = []; // in (toward the midline)
+        a.push(["mixamorigRightArm", "rotation", "x", -0.45, "-"]);
+        a.push(["mixamorigRightArm", "rotation", "y", 0.97, "+"]);
+        a.push(["mixamorigRightHand", "rotation", "z", 0.5, "-"]);
+        ref.animations.push(a);
+        a = []; // up
+        a.push(["mixamorigRightArm", "rotation", "x", -0.53, "-"]);
+        a.push(["mixamorigRightArm", "rotation", "y", 0.95, "-"]);
+        a.push(["mixamorigRightHand", "rotation", "z", 0.65, "+"]);
+        ref.animations.push(a);
+    }
 
     // Reset
     a = [];
@@ -280,15 +296,12 @@ export const SORRY = (ref) => {
     a.push(["mixamorigRightHandPinky1", "rotation", "z", 0, "-"]);
     a.push(["mixamorigRightHandPinky2", "rotation", "z", 0, "-"]);
     a.push(["mixamorigRightHandPinky3", "rotation", "z", 0, "-"]);
-    a.push(["mixamorigRightHandThumb1", "rotation", "x", 0, "-"]);
-
     a.push(["mixamorigRightArm", "rotation", "x", 0, "+"]);
-    a.push(["mixamorigRightArm", "rotation", "y", 0, "+"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/3, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", 0, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 0, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/3, "-"]);
     a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/1.5, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "z", 0, "-"]);
     a.push(["mixamorigRightHand", "rotation", "x", 0, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "z", 0, "-"]);
     a.push(["mixamorigNeck", "rotation", "x", Math.PI/12, "-"]);
     ref.animations.push(a);
 
