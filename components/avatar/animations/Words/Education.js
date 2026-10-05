@@ -226,49 +226,196 @@ export const CLASS = (ref) => {
 };
 
 /**
- * TEACHER - Hands near temples moving forward (teach), then person agent marker
+ * TEACHER (ISL) - compound TEACH + PERSON.
+ * TEACH: both hands in a flat 'O' (fingertips bunched on the thumb) at the
+ * sides of the forehead, fingertips toward the head; both move forward and
+ * out from the head (knowledge given out).
+ * PERSON: the right hand in an 'I' (little finger up, other fingers closed,
+ * thumb across them), palm facing left, in front of the chest, moves straight
+ * down; the left hand returns to rest.
+ * (Distinct from STUDENT = LEARN + PERSON: one hand from the palm to the head.)
  */
 export const TEACHER = (ref) => {
     let a = [];
-    // Stage 1: Hands near temples
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/3, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/6, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/4, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI/2.3, "+"]);
-
-    a.push(["mixamorigLeftArm", "rotation", "x", -Math.PI/3, "-"]);
-    a.push(["mixamorigLeftArm", "rotation", "z", -Math.PI/6, "+"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "y", -Math.PI/4, "+"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "x", Math.PI/2.3, "+"]);
+    // TEACH: both flat-O hands at the sides of the forehead, fingertips toward the head
+    a.push(["mixamorigRightArm", "rotation", "x", -0.858, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 0.313, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "z", 1.368, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", 2.222, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "z", -0.3, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "x", -0.237, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "y", -0.265, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "z", 0.127, "+"]);
+    a.push(["mixamorigRightHandIndex1", "rotation", "z", 1, "+"]);
+    a.push(["mixamorigRightHandIndex2", "rotation", "z", 0.35, "+"]);
+    a.push(["mixamorigRightHandIndex3", "rotation", "z", 0.2, "+"]);
+    a.push(["mixamorigRightHandMiddle1", "rotation", "z", 1, "+"]);
+    a.push(["mixamorigRightHandMiddle2", "rotation", "z", 0.35, "+"]);
+    a.push(["mixamorigRightHandMiddle3", "rotation", "z", 0.2, "+"]);
+    a.push(["mixamorigRightHandRing1", "rotation", "z", 1.05, "+"]);
+    a.push(["mixamorigRightHandRing2", "rotation", "z", 0.35, "+"]);
+    a.push(["mixamorigRightHandRing3", "rotation", "z", 0.2, "+"]);
+    a.push(["mixamorigRightHandPinky1", "rotation", "z", 1.1, "+"]);
+    a.push(["mixamorigRightHandPinky2", "rotation", "z", 0.35, "+"]);
+    a.push(["mixamorigRightHandPinky3", "rotation", "z", 0.2, "+"]);
+    a.push(["mixamorigRightHandIndex1", "rotation", "y", -0.1, "-"]);
+    a.push(["mixamorigRightHandMiddle1", "rotation", "y", 0.08, "+"]);
+    a.push(["mixamorigRightHandRing1", "rotation", "y", 0.3, "+"]);
+    a.push(["mixamorigRightHandPinky1", "rotation", "y", 0.5, "+"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "x", 0.467, "+"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "y", -0.328, "-"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "z", 0.105, "+"]);
+    a.push(["mixamorigRightHandThumb2", "rotation", "y", -0.072, "-"]);
+    a.push(["mixamorigRightHandThumb2", "rotation", "z", 0.04, "+"]);
+    a.push(["mixamorigLeftArm", "rotation", "x", -0.858, "-"]);
+    a.push(["mixamorigLeftArm", "rotation", "y", -0.313, "-"]);
+    a.push(["mixamorigLeftArm", "rotation", "z", -1.368, "-"]);
+    a.push(["mixamorigLeftForeArm", "rotation", "y", -2.222, "-"]);
+    a.push(["mixamorigLeftForeArm", "rotation", "z", 0.3, "+"]);
+    a.push(["mixamorigLeftHand", "rotation", "x", -0.237, "-"]);
+    a.push(["mixamorigLeftHand", "rotation", "y", 0.265, "+"]);
+    a.push(["mixamorigLeftHand", "rotation", "z", -0.127, "-"]);
+    a.push(["mixamorigLeftHandIndex1", "rotation", "z", -1, "-"]);
+    a.push(["mixamorigLeftHandIndex2", "rotation", "z", -0.35, "-"]);
+    a.push(["mixamorigLeftHandIndex3", "rotation", "z", -0.2, "-"]);
+    a.push(["mixamorigLeftHandMiddle1", "rotation", "z", -1, "-"]);
+    a.push(["mixamorigLeftHandMiddle2", "rotation", "z", -0.35, "-"]);
+    a.push(["mixamorigLeftHandMiddle3", "rotation", "z", -0.2, "-"]);
+    a.push(["mixamorigLeftHandRing1", "rotation", "z", -1.05, "-"]);
+    a.push(["mixamorigLeftHandRing2", "rotation", "z", -0.35, "-"]);
+    a.push(["mixamorigLeftHandRing3", "rotation", "z", -0.2, "-"]);
+    a.push(["mixamorigLeftHandPinky1", "rotation", "z", -1.1, "-"]);
+    a.push(["mixamorigLeftHandPinky2", "rotation", "z", -0.35, "-"]);
+    a.push(["mixamorigLeftHandPinky3", "rotation", "z", -0.2, "-"]);
+    a.push(["mixamorigLeftHandIndex1", "rotation", "y", 0.1, "+"]);
+    a.push(["mixamorigLeftHandMiddle1", "rotation", "y", -0.08, "-"]);
+    a.push(["mixamorigLeftHandRing1", "rotation", "y", -0.3, "-"]);
+    a.push(["mixamorigLeftHandPinky1", "rotation", "y", -0.5, "-"]);
+    a.push(["mixamorigLeftHandThumb1", "rotation", "x", 0.467, "+"]);
+    a.push(["mixamorigLeftHandThumb1", "rotation", "y", 0.328, "+"]);
+    a.push(["mixamorigLeftHandThumb1", "rotation", "z", -0.105, "-"]);
+    a.push(["mixamorigLeftHandThumb2", "rotation", "y", 0.072, "+"]);
+    a.push(["mixamorigLeftHandThumb2", "rotation", "z", -0.04, "-"]);
     ref.animations.push(a);
 
-    // Stage 2: Move hands forward (teach sign)
+    // TEACH: both hands move forward and out from the head (giving out knowledge)
     a = [];
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/2.8, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI/3.5, "-"]);
-    a.push(["mixamorigLeftArm", "rotation", "x", -Math.PI/2.8, "-"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "x", Math.PI/3.5, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "x", -1.176, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", -0.14, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "z", 1.216, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", 0.033, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", 1.675, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "z", 0.212, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "x", 0.223, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "y", -0.472, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "z", 0.432, "+"]);
+    a.push(["mixamorigLeftArm", "rotation", "x", -1.176, "-"]);
+    a.push(["mixamorigLeftArm", "rotation", "y", 0.14, "+"]);
+    a.push(["mixamorigLeftArm", "rotation", "z", -1.216, "+"]);
+    a.push(["mixamorigLeftForeArm", "rotation", "x", 0.033, "+"]);
+    a.push(["mixamorigLeftForeArm", "rotation", "y", -1.675, "+"]);
+    a.push(["mixamorigLeftForeArm", "rotation", "z", -0.212, "-"]);
+    a.push(["mixamorigLeftHand", "rotation", "x", 0.223, "+"]);
+    a.push(["mixamorigLeftHand", "rotation", "y", 0.472, "+"]);
+    a.push(["mixamorigLeftHand", "rotation", "z", -0.432, "-"]);
     ref.animations.push(a);
 
-    // Stage 3: Person marker (hands flat moving downward along torso)
+    // PERSON: right 'I' hand (little finger up) in front of the chest; left hand returns to rest
     a = [];
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/4.5, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI/4, "-"]);
-    a.push(["mixamorigLeftArm", "rotation", "x", -Math.PI/4.5, "+"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "x", Math.PI/4, "-"]);
-    ref.animations.push(a);
-
-    // Reset
-    a = [];
-    a.push(["mixamorigRightArm", "rotation", "x", 0, "+"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/3, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", 0, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/1.5, "+"]);
-
+    a.push(["mixamorigRightHandIndex1", "rotation", "z", 1.571, "+"]);
+    a.push(["mixamorigRightHandIndex2", "rotation", "z", 1.571, "+"]);
+    a.push(["mixamorigRightHandIndex3", "rotation", "z", 1.047, "+"]);
+    a.push(["mixamorigRightHandIndex1", "rotation", "y", 0, "+"]);
+    a.push(["mixamorigRightHandMiddle1", "rotation", "z", 1.571, "+"]);
+    a.push(["mixamorigRightHandMiddle2", "rotation", "z", 1.571, "+"]);
+    a.push(["mixamorigRightHandMiddle3", "rotation", "z", 1.047, "+"]);
+    a.push(["mixamorigRightHandMiddle1", "rotation", "y", 0, "-"]);
+    a.push(["mixamorigRightHandRing1", "rotation", "z", 1.571, "+"]);
+    a.push(["mixamorigRightHandRing2", "rotation", "z", 1.571, "+"]);
+    a.push(["mixamorigRightHandRing3", "rotation", "z", 1.047, "+"]);
+    a.push(["mixamorigRightHandRing1", "rotation", "y", 0, "-"]);
+    a.push(["mixamorigRightHandPinky1", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandPinky2", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandPinky3", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandPinky1", "rotation", "y", 0, "-"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "x", 0.495, "+"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "y", 0.005, "+"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "z", -0.1, "-"]);
+    a.push(["mixamorigRightHandThumb2", "rotation", "y", -0.9, "-"]);
+    a.push(["mixamorigRightHandThumb2", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandThumb3", "rotation", "y", -0.9, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "x", -0.191, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 0.439, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "z", 1.127, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", -0.062, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", 1.898, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "z", 0.013, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "x", -0.8, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "y", 0.7, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "z", 0.027, "-"]);
     a.push(["mixamorigLeftArm", "rotation", "x", 0, "+"]);
-    a.push(["mixamorigLeftArm", "rotation", "z", -Math.PI/3, "-"]);
+    a.push(["mixamorigLeftArm", "rotation", "y", 0, "-"]);
+    a.push(["mixamorigLeftArm", "rotation", "z", -Math.PI/3, "+"]);
     a.push(["mixamorigLeftForeArm", "rotation", "x", 0, "-"]);
     a.push(["mixamorigLeftForeArm", "rotation", "y", -Math.PI/1.5, "-"]);
+    a.push(["mixamorigLeftForeArm", "rotation", "z", 0, "+"]);
+    a.push(["mixamorigLeftHand", "rotation", "x", 0, "-"]);
+    a.push(["mixamorigLeftHand", "rotation", "y", 0, "-"]);
+    a.push(["mixamorigLeftHand", "rotation", "z", 0, "+"]);
+    a.push(["mixamorigLeftHandIndex1", "rotation", "z", 0, "+"]);
+    a.push(["mixamorigLeftHandIndex2", "rotation", "z", 0, "+"]);
+    a.push(["mixamorigLeftHandIndex3", "rotation", "z", 0, "+"]);
+    a.push(["mixamorigLeftHandIndex1", "rotation", "y", 0, "-"]);
+    a.push(["mixamorigLeftHandMiddle1", "rotation", "z", 0, "+"]);
+    a.push(["mixamorigLeftHandMiddle2", "rotation", "z", 0, "+"]);
+    a.push(["mixamorigLeftHandMiddle3", "rotation", "z", 0, "+"]);
+    a.push(["mixamorigLeftHandMiddle1", "rotation", "y", 0, "+"]);
+    a.push(["mixamorigLeftHandRing1", "rotation", "z", 0, "+"]);
+    a.push(["mixamorigLeftHandRing2", "rotation", "z", 0, "+"]);
+    a.push(["mixamorigLeftHandRing3", "rotation", "z", 0, "+"]);
+    a.push(["mixamorigLeftHandRing1", "rotation", "y", 0, "+"]);
+    a.push(["mixamorigLeftHandPinky1", "rotation", "z", 0, "+"]);
+    a.push(["mixamorigLeftHandPinky2", "rotation", "z", 0, "+"]);
+    a.push(["mixamorigLeftHandPinky3", "rotation", "z", 0, "+"]);
+    a.push(["mixamorigLeftHandPinky1", "rotation", "y", 0, "+"]);
+    a.push(["mixamorigLeftHandThumb1", "rotation", "x", 0, "-"]);
+    a.push(["mixamorigLeftHandThumb1", "rotation", "y", 0, "-"]);
+    a.push(["mixamorigLeftHandThumb1", "rotation", "z", 0, "+"]);
+    a.push(["mixamorigLeftHandThumb2", "rotation", "y", 0, "-"]);
+    a.push(["mixamorigLeftHandThumb2", "rotation", "z", 0, "+"]);
+    ref.animations.push(a);
+
+    // PERSON: the 'I' hand moves straight down, little finger kept pointing up
+    a = [];
+    a.push(["mixamorigRightForeArm", "rotation", "y", 1.45, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "y", 1.1, "+"]);
+    ref.animations.push(a);
+
+    // Return to the default rest pose
+    a = [];
+    a.push(["mixamorigRightHandIndex1", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandIndex2", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandIndex3", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandMiddle1", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandMiddle2", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandMiddle3", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandRing1", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandRing2", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandRing3", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "x", 0, "-"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "y", 0, "-"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "z", 0, "+"]);
+    a.push(["mixamorigRightHandThumb2", "rotation", "y", 0, "+"]);
+    a.push(["mixamorigRightHandThumb3", "rotation", "y", 0, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "x", 0, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 0, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/3, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", 0, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/1.5, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "x", 0, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "y", 0, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "z", 0, "-"]);
     ref.animations.push(a);
 
     finish(ref);
