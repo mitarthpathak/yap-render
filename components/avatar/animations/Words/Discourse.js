@@ -311,43 +311,75 @@ export const SEE = (ref) => {
 };
 
 /**
- * LISTEN - Right hand cupped behind right ear, head tilted slightly to right
+ * LISTEN (ISL) - one hand. Cupped hand (fingers together and curved, thumb
+ * slightly out) raised behind the right ear with the palm facing forward, as if
+ * catching sound; the head tilts slightly toward it and the cup closes forward
+ * once around the ear before the hand returns to rest.
  */
 export const LISTEN = (ref) => {
     let a = [];
-    // Stage 1: Right hand cupped behind right ear
-    a.push(["mixamorigRightHandIndex1", "rotation", "z", Math.PI/4, "+"]);
-    a.push(["mixamorigRightHandMiddle1", "rotation", "z", Math.PI/4, "+"]);
-    a.push(["mixamorigRightHandRing1", "rotation", "z", Math.PI/4, "+"]);
-    a.push(["mixamorigRightHandPinky1", "rotation", "z", Math.PI/4, "+"]);
-
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/3.5, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/6, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/3.5, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI/2.1, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "z", -Math.PI/6, "-"]);
-    a.push(["mixamorigNeck", "rotation", "z", -Math.PI/10, "-"]);
+    // Cupped hand (fingers together and curved, thumb out) raised behind the
+    // right ear, palm facing forward; the head tilts slightly toward it.
+    a.push(["mixamorigRightHandIndex1", "rotation", "z", 0.6, "+"]);
+    a.push(["mixamorigRightHandIndex2", "rotation", "z", 0.6, "+"]);
+    a.push(["mixamorigRightHandIndex3", "rotation", "z", 0.36, "+"]);
+    a.push(["mixamorigRightHandMiddle1", "rotation", "z", 0.6, "+"]);
+    a.push(["mixamorigRightHandMiddle2", "rotation", "z", 0.6, "+"]);
+    a.push(["mixamorigRightHandMiddle3", "rotation", "z", 0.36, "+"]);
+    a.push(["mixamorigRightHandPinky1", "rotation", "z", 0.6, "+"]);
+    a.push(["mixamorigRightHandPinky2", "rotation", "z", 0.6, "+"]);
+    a.push(["mixamorigRightHandPinky3", "rotation", "z", 0.36, "+"]);
+    a.push(["mixamorigRightHandRing1", "rotation", "z", 0.6, "+"]);
+    a.push(["mixamorigRightHandRing2", "rotation", "z", 0.6, "+"]);
+    a.push(["mixamorigRightHandRing3", "rotation", "z", 0.36, "+"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "x", 0.3, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "x", -1.116, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", -0.282, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "z", 0.796, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", 0.059, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", 2.5, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "z", 0.08, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "x", 0.904, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "y", 0.169, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "z", -0.151, "-"]);
+    a.push(["mixamorigNeck", "rotation", "z", 0.12, "+"]);
     ref.animations.push(a);
 
-    // Stage 2: Hold listening pose
     a = [];
-    a.push(["mixamorigNeck", "rotation", "x", Math.PI/10, "+"]);
+    // The cup closes a little forward around the ear (catching the sound)...
+    a.push(["mixamorigRightHand", "rotation", "z", 0.15, "+"]);
     ref.animations.push(a);
 
-    // Reset
     a = [];
+    // ...and opens again (held listening).
+    a.push(["mixamorigRightHand", "rotation", "z", -0.151, "-"]);
+    ref.animations.push(a);
+
+    a = [];
+    // Return to the default pose.
     a.push(["mixamorigRightHandIndex1", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandIndex2", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandIndex3", "rotation", "z", 0, "-"]);
     a.push(["mixamorigRightHandMiddle1", "rotation", "z", 0, "-"]);
-    a.push(["mixamorigRightHandRing1", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandMiddle2", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandMiddle3", "rotation", "z", 0, "-"]);
     a.push(["mixamorigRightHandPinky1", "rotation", "z", 0, "-"]);
-
+    a.push(["mixamorigRightHandPinky2", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandPinky3", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandRing1", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandRing2", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandRing3", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "x", 0, "-"]);
     a.push(["mixamorigRightArm", "rotation", "x", 0, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 0, "+"]);
     a.push(["mixamorigRightArm", "rotation", "z", Math.PI/3, "+"]);
     a.push(["mixamorigRightForeArm", "rotation", "x", 0, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/1.5, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "z", 0, "+"]);
-    a.push(["mixamorigNeck", "rotation", "z", 0, "+"]);
-    a.push(["mixamorigNeck", "rotation", "x", Math.PI/12, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/1.5, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "x", 0, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "y", 0, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "z", 0, "+"]);
+    a.push(["mixamorigNeck", "rotation", "z", 0, "-"]);
     ref.animations.push(a);
 
     finish(ref);
