@@ -11,51 +11,58 @@ const finish = (ref) => {
 };
 
 /**
- * SCHOOL - Right open palm clapping down onto left flat palm twice
+ * SCHOOL (ISL) - both flat hands clap together twice, palms meeting like
+ * hands joined in prayer / namaste (the school-prayer clap).
+ * - Handshape: both hands flat ("B"), fingers together and straight, thumbs
+ *   held in against the side of the index finger.
+ * - Location / orientation: in front of the chest, palms facing each other,
+ *   fingers pointing up and slightly forward, forearms angled up toward the
+ *   midline with the elbows relaxed at the sides.
+ * - Movement: the hands start ~15 cm apart, close until the palms (thumb
+ *   pads and fingers) meet, open again and meet a second time, then return
+ *   to rest. Two crisp contacts distinguish it from a held namaste.
  */
 export const SCHOOL = (ref) => {
-    let a = [];
-    // Stage 1: Left palm flat facing up, right hand open above it
-    a.push(["mixamorigLeftArm", "rotation", "x", -Math.PI/4, "-"]);
-    a.push(["mixamorigLeftArm", "rotation", "z", -Math.PI/6, "+"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "y", -Math.PI/3.5, "+"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "x", Math.PI/3.5, "+"]);
-    a.push(["mixamorigLeftHand", "rotation", "y", -Math.PI/4, "-"]);
+    // Track the current delta of every axis used so each instruction gets the
+    // correct '+'/'-' direction (a wrong flag silently drops the instruction).
+    const cur = {
+        "RightArm.z": Math.PI/3, "RightForeArm.y": Math.PI/1.5,
+        "LeftArm.z": -Math.PI/3, "LeftForeArm.y": -Math.PI/1.5,
+    };
+    const key = (targets) => {
+        const a = [];
+        for (const [k, v] of Object.entries(targets)) {
+            const from = cur[k] ?? 0;
+            if (Math.abs(v - from) < 1e-6) continue;
+            const [bone, axis] = k.split(".");
+            a.push(["mixamorig" + bone, "rotation", axis, v, v > from ? "+" : "-"]);
+            cur[k] = v;
+        }
+        ref.animations.push(a);
+    };
+    // Both arms mirror each other: right-side values, left = y/z negated.
+    const both = (arm, foreY, hand) => ({
+        "RightArm.x": arm[0], "RightArm.y": arm[1], "RightArm.z": arm[2], "RightForeArm.y": foreY,
+        "RightHand.x": hand[0], "RightHand.y": hand[1], "RightHand.z": hand[2],
+        "LeftArm.x": arm[0], "LeftArm.y": -arm[1], "LeftArm.z": -arm[2], "LeftForeArm.y": -foreY,
+        "LeftHand.x": hand[0], "LeftHand.y": -hand[1], "LeftHand.z": -hand[2],
+    });
+    const OPEN = both([-0.39, 0.886, 1.08], 1.31, [0.345, 0.775, -1.14]);   // palms ~15 cm apart
+    const CLAP = both([-0.30, 1.088, 0.913], 1.356, [0.135, 0.584, -1.153]); // palms meet
 
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/3.5, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/6, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/3.5, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI/2.5, "+"]);
-    ref.animations.push(a);
-
-    // Clap 1
-    a = [];
-    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI/3.5, "-"]);
-    ref.animations.push(a);
-
-    // Lift 1
-    a = [];
-    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI/2.5, "+"]);
-    ref.animations.push(a);
-
-    // Clap 2
-    a = [];
-    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI/3.5, "-"]);
-    ref.animations.push(a);
-
-    // Reset
-    a = [];
-    a.push(["mixamorigLeftArm", "rotation", "x", 0, "+"]);
-    a.push(["mixamorigLeftArm", "rotation", "z", -Math.PI/3, "-"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "x", 0, "-"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "y", -Math.PI/1.5, "-"]);
-    a.push(["mixamorigLeftHand", "rotation", "y", 0, "+"]);
-
-    a.push(["mixamorigRightArm", "rotation", "x", 0, "+"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/3, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", 0, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/1.5, "+"]);
-    ref.animations.push(a);
+    // 1. Raise both flat hands in front of the chest, palms facing, thumbs in.
+    key({ ...OPEN, "RightHandThumb1.z": -0.75, "LeftHandThumb1.z": 0.75 });
+    // 2. Clap 1.
+    key(CLAP);
+    // 3. Open.
+    key(OPEN);
+    // 4. Clap 2.
+    key(CLAP);
+    // 5. Back to the rest pose.
+    key({
+        ...both([0, 0, Math.PI/3], Math.PI/1.5, [0, 0, 0]),
+        "RightHandThumb1.z": 0, "LeftHandThumb1.z": 0,
+    });
 
     finish(ref);
 };
