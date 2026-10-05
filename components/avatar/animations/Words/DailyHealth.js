@@ -292,80 +292,69 @@ export const HOSPITAL = (ref) => {
 };
 
 /**
- * PAIN - Both index fingers pointing towards each other pulsing repeatedly with pained head expression
+ * PAIN (ISL) - the two index fingers point at each other and twist.
+ * - Handshape: both hands in the index ("1") handshape - index finger
+ *   straight, middle, ring and little fingers curled into the palm, thumb
+ *   folded over them.
+ * - Location / orientation: in front of the chest, forearms angled in toward
+ *   the midline with the elbows out, index fingers pointing at each other
+ *   (and slightly forward) with the tips ~5 cm apart, palms facing down.
+ * - Movement: both wrists twist (forearm roll) so the palms turn in toward
+ *   the body while the fingertips stay pointing at each other, twist back,
+ *   and twist again (two twists); the head bows slightly as a pained
+ *   expression. Then both hands return to rest.
  */
 export const PAIN = (ref) => {
-    let a = [];
-    // Stage 1: Both index fingers pointing inward towards each other at chest
-    a.push(["mixamorigRightHandMiddle1", "rotation", "z", Math.PI/2, "+"]);
-    a.push(["mixamorigRightHandRing1", "rotation", "z", Math.PI/2, "+"]);
-    a.push(["mixamorigRightHandPinky1", "rotation", "z", Math.PI/2, "+"]);
-    a.push(["mixamorigRightHandThumb1", "rotation", "x", Math.PI/3, "+"]);
+    // Track the current delta of every axis used so each instruction gets the
+    // correct '+'/'-' direction (a wrong flag silently drops the instruction).
+    const cur = {
+        "Neck.x": Math.PI/12,
+        "RightArm.z": Math.PI/3, "RightForeArm.y": Math.PI/1.5,
+        "LeftArm.z": -Math.PI/3, "LeftForeArm.y": -Math.PI/1.5,
+    };
+    const key = (targets) => {
+        const a = [];
+        for (const [k, v] of Object.entries(targets)) {
+            const from = cur[k] ?? 0;
+            if (Math.abs(v - from) < 1e-6) continue;
+            const [bone, axis] = k.split(".");
+            a.push(["mixamorig" + bone, "rotation", axis, v, v > from ? "+" : "-"]);
+            cur[k] = v;
+        }
+        ref.animations.push(a);
+    };
+    // Index handshape on both hands (left finger curl is negative z).
+    const hands = (c) => {
+        const t = {};
+        for (const f of ["Middle", "Ring", "Pinky"]) {
+            t[`RightHand${f}1.z`] = c * Math.PI/2; t[`RightHand${f}2.z`] = c * Math.PI/2; t[`RightHand${f}3.z`] = c * Math.PI/2.5;
+            t[`LeftHand${f}1.z`] = -c * Math.PI/2; t[`LeftHand${f}2.z`] = -c * Math.PI/2; t[`LeftHand${f}3.z`] = -c * Math.PI/2.5;
+        }
+        t["RightHandThumb1.x"] = c * Math.PI/3; t["RightHandThumb2.y"] = -c * Math.PI/3;
+        t["LeftHandThumb1.x"] = c * Math.PI/3; t["LeftHandThumb2.y"] = c * Math.PI/3;
+        return t;
+    };
+    // Both arms mirror each other: right-side values, left = y/z negated.
+    const both = (arm, foreY, hand) => ({
+        "RightArm.x": arm[0], "RightArm.y": arm[1], "RightArm.z": arm[2], "RightForeArm.y": foreY,
+        "RightHand.x": hand[0], "RightHand.y": hand[1], "RightHand.z": hand[2],
+        "LeftArm.x": arm[0], "LeftArm.y": -arm[1], "LeftArm.z": -arm[2], "LeftForeArm.y": -foreY,
+        "LeftHand.x": hand[0], "LeftHand.y": -hand[1], "LeftHand.z": -hand[2],
+    });
+    const ARM = [-0.17, 0.52, 0.68];
+    const FLAT = both(ARM, 1.77, [0.3, 0, 0.2]);     // palms down, tips ~5 cm apart
+    const TWIST = both(ARM, 1.77, [-0.8, 0, 0.2]);   // palms rolled in toward the body
 
-    a.push(["mixamorigLeftHandMiddle1", "rotation", "z", -Math.PI/2, "-"]);
-    a.push(["mixamorigLeftHandRing1", "rotation", "z", -Math.PI/2, "-"]);
-    a.push(["mixamorigLeftHandPinky1", "rotation", "z", -Math.PI/2, "-"]);
-    a.push(["mixamorigLeftHandThumb1", "rotation", "x", Math.PI/3, "+"]);
-
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/4, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/8, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/3.5, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI/3.5, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "z", Math.PI/6, "+"]);
-
-    a.push(["mixamorigLeftArm", "rotation", "x", -Math.PI/4, "-"]);
-    a.push(["mixamorigLeftArm", "rotation", "z", -Math.PI/8, "+"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "y", -Math.PI/3.5, "+"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "x", Math.PI/3.5, "+"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "z", -Math.PI/6, "-"]);
-
-    a.push(["mixamorigNeck", "rotation", "x", Math.PI/7, "+"]);
-    ref.animations.push(a);
-
-    // Thrust 1
-    a = [];
-    a.push(["mixamorigRightForeArm", "rotation", "z", Math.PI/4, "+"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "z", -Math.PI/4, "-"]);
-    ref.animations.push(a);
-
-    // Return 1
-    a = [];
-    a.push(["mixamorigRightForeArm", "rotation", "z", Math.PI/6, "-"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "z", -Math.PI/6, "+"]);
-    ref.animations.push(a);
-
-    // Thrust 2
-    a = [];
-    a.push(["mixamorigRightForeArm", "rotation", "z", Math.PI/4, "+"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "z", -Math.PI/4, "-"]);
-    ref.animations.push(a);
-
-    // Reset
-    a = [];
-    a.push(["mixamorigRightHandMiddle1", "rotation", "z", 0, "-"]);
-    a.push(["mixamorigRightHandRing1", "rotation", "z", 0, "-"]);
-    a.push(["mixamorigRightHandPinky1", "rotation", "z", 0, "-"]);
-    a.push(["mixamorigRightHandThumb1", "rotation", "x", 0, "-"]);
-
-    a.push(["mixamorigLeftHandMiddle1", "rotation", "z", 0, "+"]);
-    a.push(["mixamorigLeftHandRing1", "rotation", "z", 0, "+"]);
-    a.push(["mixamorigLeftHandPinky1", "rotation", "z", 0, "+"]);
-    a.push(["mixamorigLeftHandThumb1", "rotation", "x", 0, "-"]);
-
-    a.push(["mixamorigRightArm", "rotation", "x", 0, "+"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/3, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", 0, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/1.5, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "z", 0, "-"]);
-
-    a.push(["mixamorigLeftArm", "rotation", "x", 0, "+"]);
-    a.push(["mixamorigLeftArm", "rotation", "z", -Math.PI/3, "-"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "x", 0, "-"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "y", -Math.PI/1.5, "-"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "z", 0, "+"]);
-
-    a.push(["mixamorigNeck", "rotation", "x", Math.PI/12, "-"]);
-    ref.animations.push(a);
+    // 1. Both index hands come up in front of the chest, pointing at each other.
+    key({ ...hands(1), ...FLAT });
+    // 2. Twist 1 (with a slight wince of the head).
+    key({ ...TWIST, "Neck.x": 0.38 });
+    // 3. Twist back.
+    key(FLAT);
+    // 4. Twist 2.
+    key(TWIST);
+    // 5. Back to the rest pose.
+    key({ ...hands(0), ...both([0, 0, Math.PI/3], Math.PI/1.5, [0, 0, 0]), "Neck.x": Math.PI/12 });
 
     finish(ref);
 };
