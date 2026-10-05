@@ -1,78 +1,75 @@
 /**
  * Indian Sign Language (ISL) Sign Animation: DRINK / DRINKING
- * 
- * Accurately calibrated to avoid any mesh clipping with chest/stomach:
- * 1. Form a natural C-cup shape with right hand.
- * 2. Lift right arm & forearm forward in front of the mouth.
- * 3. Tilt the cup to the mouth with slight head movement.
- * 4. Smoothly restore all bones to the resting default pose.
+ *
+ * ISL DRINK is a mimetic "drink from a glass" sign:
+ * - Handshape: right C-hand (all four fingers curved, thumb opposed with a
+ *   gap), as if holding a glass/tumbler.
+ * - Location: in front of the mouth; the thumb side comes to the lower lip.
+ * - Orientation: palm facing left (toward the mouth's centre line).
+ * - Movement: the hand is raised to just in front of the mouth, moves in to
+ *   the lips while tipping the glass toward the mouth (fingers rotate up,
+ *   head tilts back a little), eases back and tips again (two sips), then
+ *   returns to rest.
+ * Distinct from WATER (thumb-extended fist pointing into the mouth).
  */
 export const DRINK = (ref) => {
+    // Stage 1: curved C-hand (fingers bent, thumb opposed with a gap, as if
+    // holding a glass), palm facing left, raised to just in front of the mouth.
     let animations = [];
-
-    // Stage 1: Right hand forms C-cup shape and raises cleanly in front of mouth
-    // Finger curls for cup shape
-    animations.push(["mixamorigRightHandIndex1", "rotation", "z", Math.PI/4, "+"]);
-    animations.push(["mixamorigRightHandIndex2", "rotation", "z", Math.PI/4, "+"]);
-    animations.push(["mixamorigRightHandIndex3", "rotation", "z", Math.PI/4, "+"]);
-    animations.push(["mixamorigRightHandMiddle1", "rotation", "z", Math.PI/4, "+"]);
-    animations.push(["mixamorigRightHandMiddle2", "rotation", "z", Math.PI/4, "+"]);
-    animations.push(["mixamorigRightHandMiddle3", "rotation", "z", Math.PI/4, "+"]);
-    animations.push(["mixamorigRightHandRing1", "rotation", "z", Math.PI/4, "+"]);
-    animations.push(["mixamorigRightHandRing2", "rotation", "z", Math.PI/4, "+"]);
-    animations.push(["mixamorigRightHandRing3", "rotation", "z", Math.PI/4, "+"]);
-    animations.push(["mixamorigRightHandPinky1", "rotation", "z", Math.PI/4, "+"]);
-    animations.push(["mixamorigRightHandPinky2", "rotation", "z", Math.PI/4, "+"]);
-    animations.push(["mixamorigRightHandPinky3", "rotation", "z", Math.PI/4, "+"]);
-
-    animations.push(["mixamorigRightHandThumb1", "rotation", "x", Math.PI/5, "+"]);
-    animations.push(["mixamorigRightHandThumb1", "rotation", "y", Math.PI/5, "+"]);
-    animations.push(["mixamorigRightHandThumb2", "rotation", "y", -Math.PI/5, "-"]);
-    animations.push(["mixamorigRightHandThumb3", "rotation", "y", -Math.PI/5, "-"]);
-
-    // Arm positioning: bring hand up and forward in front of face
-    animations.push(["mixamorigRightArm", "rotation", "x", -Math.PI/3.2, "-"]);
-    animations.push(["mixamorigRightArm", "rotation", "z", Math.PI/6, "-"]);
-    animations.push(["mixamorigRightArm", "rotation", "y", -Math.PI/12, "-"]);
-
-    animations.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/4, "-"]);
-    animations.push(["mixamorigRightForeArm", "rotation", "x", Math.PI/2.2, "+"]);
-    animations.push(["mixamorigRightForeArm", "rotation", "z", Math.PI/8, "+"]);
-
-    animations.push(["mixamorigRightHand", "rotation", "x", -Math.PI/8, "-"]);
-    animations.push(["mixamorigRightHand", "rotation", "y", Math.PI/6, "+"]);
-
-    // Ensure left arm stays cleanly in resting pose
-    animations.push(["mixamorigLeftArm", "rotation", "x", 0, "+"]);
-    animations.push(["mixamorigLeftArm", "rotation", "z", -Math.PI/3, "-"]);
-    animations.push(["mixamorigLeftForeArm", "rotation", "y", -Math.PI/1.5, "-"]);
-    animations.push(["mixamorigLeftForeArm", "rotation", "x", 0, "-"]);
-    animations.push(["mixamorigLeftForeArm", "rotation", "z", 0, "+"]);
-
+    animations.push(["mixamorigRightHandIndex1", "rotation", "z", 0.35, "+"]);
+    animations.push(["mixamorigRightHandIndex2", "rotation", "z", 0.65, "+"]);
+    animations.push(["mixamorigRightHandIndex3", "rotation", "z", 0.4, "+"]);
+    animations.push(["mixamorigRightHandMiddle1", "rotation", "z", 0.35, "+"]);
+    animations.push(["mixamorigRightHandMiddle2", "rotation", "z", 0.65, "+"]);
+    animations.push(["mixamorigRightHandMiddle3", "rotation", "z", 0.4, "+"]);
+    animations.push(["mixamorigRightHandRing1", "rotation", "z", 0.35, "+"]);
+    animations.push(["mixamorigRightHandRing2", "rotation", "z", 0.65, "+"]);
+    animations.push(["mixamorigRightHandRing3", "rotation", "z", 0.4, "+"]);
+    animations.push(["mixamorigRightHandPinky1", "rotation", "z", 0.35, "+"]);
+    animations.push(["mixamorigRightHandPinky2", "rotation", "z", 0.65, "+"]);
+    animations.push(["mixamorigRightHandPinky3", "rotation", "z", 0.4, "+"]);
+    animations.push(["mixamorigRightArm", "rotation", "x", -0.116, "-"]);
+    animations.push(["mixamorigRightArm", "rotation", "y", 0.691, "+"]);
+    animations.push(["mixamorigRightArm", "rotation", "z", 0.775, "-"]);
+    animations.push(["mixamorigRightForeArm", "rotation", "y", 2.078, "-"]);
+    animations.push(["mixamorigRightHand", "rotation", "x", -0.323, "-"]);
+    animations.push(["mixamorigRightHand", "rotation", "y", 0.107, "+"]);
+    animations.push(["mixamorigRightHand", "rotation", "z", -0.7, "-"]);
     ref.animations.push(animations);
 
-    // Stage 2: Tip cup to mouth (sip 1)
+    // Stage 2: tip the glass to the lips - thumb side at the lower lip, the
+    // hand rotates so the fingers point up (bottom of the glass lifts) and the
+    // head tilts back slightly.
     animations = [];
-    animations.push(["mixamorigRightHand", "rotation", "x", -Math.PI/3.5, "-"]);
-    animations.push(["mixamorigNeck", "rotation", "x", -Math.PI/18, "-"]);
-
+    animations.push(["mixamorigRightArm", "rotation", "x", -0.296, "-"]);
+    animations.push(["mixamorigRightArm", "rotation", "z", 1.018, "+"]);
+    animations.push(["mixamorigRightForeArm", "rotation", "y", 2.025, "-"]);
+    animations.push(["mixamorigRightHand", "rotation", "x", -0.024, "+"]);
+    animations.push(["mixamorigRightHand", "rotation", "y", 0.336, "+"]);
+    animations.push(["mixamorigNeck", "rotation", "x", 0.17, "-"]);
     ref.animations.push(animations);
 
-    // Stage 3: Lower cup slightly
+    // Stage 3: lower the glass a little (upright again).
     animations = [];
-    animations.push(["mixamorigRightHand", "rotation", "x", -Math.PI/8, "+"]);
-    animations.push(["mixamorigNeck", "rotation", "x", Math.PI/12, "+"]);
-
+    animations.push(["mixamorigRightArm", "rotation", "x", -0.116, "+"]);
+    animations.push(["mixamorigRightArm", "rotation", "z", 0.775, "-"]);
+    animations.push(["mixamorigRightForeArm", "rotation", "y", 2.078, "+"]);
+    animations.push(["mixamorigRightHand", "rotation", "x", -0.323, "-"]);
+    animations.push(["mixamorigRightHand", "rotation", "y", 0.107, "-"]);
+    animations.push(["mixamorigNeck", "rotation", "x", Math.PI / 12, "+"]);
     ref.animations.push(animations);
 
-    // Stage 4: Tip cup to mouth again (sip 2)
+    // Stage 4: second sip - tip to the lips again.
     animations = [];
-    animations.push(["mixamorigRightHand", "rotation", "x", -Math.PI/3.5, "-"]);
-    animations.push(["mixamorigNeck", "rotation", "x", -Math.PI/18, "-"]);
-
+    animations.push(["mixamorigRightArm", "rotation", "x", -0.296, "-"]);
+    animations.push(["mixamorigRightArm", "rotation", "z", 1.018, "+"]);
+    animations.push(["mixamorigRightForeArm", "rotation", "y", 2.025, "-"]);
+    animations.push(["mixamorigRightHand", "rotation", "x", -0.024, "+"]);
+    animations.push(["mixamorigRightHand", "rotation", "y", 0.336, "+"]);
+    animations.push(["mixamorigNeck", "rotation", "x", 0.17, "-"]);
     ref.animations.push(animations);
 
-    // Stage 5: Complete reset back to clean default resting pose
+    // Stage 5: return every touched axis to the default resting pose.
     animations = [];
     animations.push(["mixamorigRightHandIndex1", "rotation", "z", 0, "-"]);
     animations.push(["mixamorigRightHandIndex2", "rotation", "z", 0, "-"]);
@@ -86,50 +83,14 @@ export const DRINK = (ref) => {
     animations.push(["mixamorigRightHandPinky1", "rotation", "z", 0, "-"]);
     animations.push(["mixamorigRightHandPinky2", "rotation", "z", 0, "-"]);
     animations.push(["mixamorigRightHandPinky3", "rotation", "z", 0, "-"]);
-
-    animations.push(["mixamorigRightHandThumb1", "rotation", "x", 0, "-"]);
-    animations.push(["mixamorigRightHandThumb1", "rotation", "y", 0, "-"]);
-    animations.push(["mixamorigRightHandThumb2", "rotation", "y", 0, "+"]);
-    animations.push(["mixamorigRightHandThumb3", "rotation", "y", 0, "+"]);
-
     animations.push(["mixamorigRightArm", "rotation", "x", 0, "+"]);
-    animations.push(["mixamorigRightArm", "rotation", "y", 0, "+"]);
-    animations.push(["mixamorigRightArm", "rotation", "z", Math.PI/3, "+"]);
-
-    animations.push(["mixamorigRightForeArm", "rotation", "x", 0, "-"]);
-    animations.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/1.5, "+"]);
-    animations.push(["mixamorigRightForeArm", "rotation", "z", 0, "-"]);
-
+    animations.push(["mixamorigRightArm", "rotation", "y", 0, "-"]);
+    animations.push(["mixamorigRightArm", "rotation", "z", Math.PI / 3, "+"]);
+    animations.push(["mixamorigRightForeArm", "rotation", "y", Math.PI / 1.5, "+"]);
     animations.push(["mixamorigRightHand", "rotation", "x", 0, "+"]);
     animations.push(["mixamorigRightHand", "rotation", "y", 0, "-"]);
-
-    animations.push(["mixamorigNeck", "rotation", "x", Math.PI/12, "+"]);
-
-    // Ensure left hand and fingers are fully reset too
-    animations.push(["mixamorigLeftHandIndex1", "rotation", "z", 0, "+"]);
-    animations.push(["mixamorigLeftHandIndex2", "rotation", "z", 0, "+"]);
-    animations.push(["mixamorigLeftHandIndex3", "rotation", "z", 0, "+"]);
-    animations.push(["mixamorigLeftHandMiddle1", "rotation", "z", 0, "+"]);
-    animations.push(["mixamorigLeftHandMiddle2", "rotation", "z", 0, "+"]);
-    animations.push(["mixamorigLeftHandMiddle3", "rotation", "z", 0, "+"]);
-    animations.push(["mixamorigLeftHandRing1", "rotation", "z", 0, "+"]);
-    animations.push(["mixamorigLeftHandRing2", "rotation", "z", 0, "+"]);
-    animations.push(["mixamorigLeftHandRing3", "rotation", "z", 0, "+"]);
-    animations.push(["mixamorigLeftHandPinky1", "rotation", "z", 0, "+"]);
-    animations.push(["mixamorigLeftHandPinky2", "rotation", "z", 0, "+"]);
-    animations.push(["mixamorigLeftHandPinky3", "rotation", "z", 0, "+"]);
-    animations.push(["mixamorigLeftHandThumb1", "rotation", "x", 0, "-"]);
-    animations.push(["mixamorigLeftHandThumb2", "rotation", "y", 0, "-"]);
-
-    animations.push(["mixamorigLeftArm", "rotation", "x", 0, "+"]);
-    animations.push(["mixamorigLeftArm", "rotation", "z", -Math.PI/3, "-"]);
-    animations.push(["mixamorigLeftForeArm", "rotation", "x", 0, "-"]);
-    animations.push(["mixamorigLeftForeArm", "rotation", "y", -Math.PI/1.5, "-"]);
-    animations.push(["mixamorigLeftForeArm", "rotation", "z", 0, "+"]);
-    animations.push(["mixamorigLeftHand", "rotation", "x", 0, "-"]);
-    animations.push(["mixamorigLeftHand", "rotation", "y", 0, "+"]);
-    animations.push(["mixamorigLeftHand", "rotation", "z", 0, "-"]);
-
+    animations.push(["mixamorigRightHand", "rotation", "z", 0, "+"]);
+    animations.push(["mixamorigNeck", "rotation", "x", Math.PI / 12, "+"]);
     ref.animations.push(animations);
 
     if (ref.pending === false) {
