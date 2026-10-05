@@ -609,43 +609,53 @@ export const THANK_YOU = (ref) => {
 };
 
 /**
- * STOP - Open right hand chopping vertically down onto flat horizontal left palm
+ * STOP - ISL "stop": the left flat hand is held palm up in front of the
+ * lower chest as a base (fingers forward and slightly to the right); the
+ * right flat hand (fingers together, thumb alongside), held on edge with
+ * the little-finger side down and the palm facing the signer, is raised
+ * above it and then chops sharply straight down so its little-finger edge
+ * lands across the middle of the left palm. Then both hands rest.
+ * Measured (cm): left wrist ~[13,51,29], palm up, fingertips ~[4,49,50];
+ * right wrist raised ~[-15,63,40] (beside, not in front of, the face) ->
+ * on the left palm ~[-4,57,36], right fingertips ~[14,58,50] crossing it.
  */
 export const STOP = (ref) => {
     let a = [];
-    // Stage 1: Left hand flat palm up, right hand open held high above it
-    a.push(["mixamorigLeftArm", "rotation", "x", -Math.PI/4, "-"]);
-    a.push(["mixamorigLeftArm", "rotation", "z", -Math.PI/6, "+"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "y", -Math.PI/3.5, "+"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "x", Math.PI/4, "+"]);
-    a.push(["mixamorigLeftHand", "rotation", "y", -Math.PI/4, "-"]);
+    // Stage 1: left palm turns up as the base, right blade hand lifts above it
+    a.push(["mixamorigLeftArm", "rotation", "x", -0.4, "-"]);
+    a.push(["mixamorigLeftArm", "rotation", "y", -0.6, "-"]);
+    a.push(["mixamorigLeftForeArm", "rotation", "y", -1.7, "+"]);
+    a.push(["mixamorigLeftHand", "rotation", "x", -2.0, "-"]);
+    a.push(["mixamorigLeftHand", "rotation", "z", 0.6, "+"]);
 
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/2.8, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/6, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/3.5, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI/2.5, "+"]);
-    a.push(["mixamorigRightHand", "rotation", "z", -Math.PI/4, "-"]); // Vertical blade edge
+    a.push(["mixamorigRightArm", "rotation", "x", -0.92, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 0.8, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", 1.1, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "x", -1.0, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "y", -0.3, "-"]);
     ref.animations.push(a);
 
-    // Stage 2: Sharp chop down onto left palm
+    // Stage 2: sharp chop down - right little-finger edge lands on the left palm
     a = [];
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/4.5, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI/4, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "x", -0.8, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 1.1, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", 1.25, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "x", -0.9, "+"]);
     ref.animations.push(a);
 
     // Reset
     a = [];
     a.push(["mixamorigLeftArm", "rotation", "x", 0, "+"]);
-    a.push(["mixamorigLeftArm", "rotation", "z", -Math.PI/3, "-"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "x", 0, "-"]);
+    a.push(["mixamorigLeftArm", "rotation", "y", 0, "+"]);
     a.push(["mixamorigLeftForeArm", "rotation", "y", -Math.PI/1.5, "-"]);
-    a.push(["mixamorigLeftHand", "rotation", "y", 0, "+"]);
+    a.push(["mixamorigLeftHand", "rotation", "x", 0, "+"]);
+    a.push(["mixamorigLeftHand", "rotation", "z", 0, "-"]);
 
     a.push(["mixamorigRightArm", "rotation", "x", 0, "+"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/3, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", 0, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 0, "-"]);
     a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/1.5, "+"]);
-    a.push(["mixamorigRightHand", "rotation", "z", 0, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "x", 0, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "y", 0, "+"]);
     ref.animations.push(a);
 
     finish(ref);
