@@ -532,52 +532,45 @@ export const HELLO = (ref) => {
 };
 
 /**
- * THANK_YOU - Right flat hand, fingertips at the chin, then arcs forward and
- * down toward the person as the palm turns up, with a small bow of the head.
- * This is the standard ISL "thank you" (shared with ASL). Solved numerically -
- * the two stage-2 frames trace a CURVE (out from the chin first, then down),
- * not a straight diagonal:
- *   stage 1   hand y 0.69, x -0.09, z 0.14  (at the chin)
- *   stage 2a  hand y 0.65, x -0.15, z 0.27  (eased forward off the chin)
- *   stage 2b  hand y 0.49, x -0.17, z 0.30  (arced down, palm up)
+ * THANK_YOU - ISL "thank you": right flat hand (B, fingers together, thumb
+ * alongside), fingertips touching the chin with the palm toward the face,
+ * then the hand moves forward and down toward the person thanked, opening to
+ * palm-up, with a small bow of the head. One outward movement, then rest.
+ *   stage 1  wrist ~[-5,53,27] cm, index tip ~[-1,72,16] at the chin/lower
+ *            lip, palm toward the face, fingers up
+ *   stage 2  wrist ~[-15,48,42], hand out in front of the chest, palm up,
+ *            fingers toward the person
  */
 export const THANK_YOU = (ref) => {
     let a = [];
-    // Stage 1: flat right hand rises to the chin, palm toward the face.
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI / 1.3, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "y", -Math.PI / 1.7, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "z", 0, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", -Math.PI / 12, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI / 5, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "z", Math.PI / 1.3, "+"]);
-    a.push(["mixamorigRightHand", "rotation", "x", -Math.PI / 6, "-"]);
-    a.push(["mixamorigNeck", "rotation", "x", Math.PI / 8, "+"]);
+    // Stage 1: flat hand rises to the chin, fingertips on the chin, palm in.
+    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI / 6.5, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", Math.PI / 3.5, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI / 1.85, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "x", -Math.PI / 2, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "y", Math.PI / 4, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "z", Math.PI / 2.8, "+"]);
     ref.animations.push(a);
 
-    // Stage 2a: the hand eases straight forward off the chin (curve begins).
+    // Stage 2: hand moves forward and down off the chin toward the person,
+    // the palm turning up; the head gives a small bow.
     a = [];
-    a.push(["mixamorigRightForeArm", "rotation", "z", Math.PI / 1.7, "-"]);
-    a.push(["mixamorigRightHand", "rotation", "x", -Math.PI / 12, "+"]);
-    ref.animations.push(a);
-
-    // Stage 2b: it then arcs down toward the person, palm turning up; head bows.
-    a = [];
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI / 1.5, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "z", Math.PI / 1.9, "-"]);
-    a.push(["mixamorigRightHand", "rotation", "x", Math.PI / 8, "+"]);
-    a.push(["mixamorigNeck", "rotation", "x", Math.PI / 5, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI / 5, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", Math.PI / 4, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI / 3, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "x", -Math.PI / 1.5, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "y", 0, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigNeck", "rotation", "x", Math.PI / 7, "+"]);
     ref.animations.push(a);
 
     // Reset to the shared rest pose.
     a = [];
     a.push(["mixamorigRightArm", "rotation", "x", 0, "+"]);
-    a.push(["mixamorigRightArm", "rotation", "y", 0, "+"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI / 3, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", 0, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 0, "-"]);
     a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI / 1.5, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "z", 0, "-"]);
-    a.push(["mixamorigRightHand", "rotation", "x", 0, "-"]);
-    a.push(["mixamorigNeck", "rotation", "x", 0, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "x", 0, "+"]);
+    a.push(["mixamorigNeck", "rotation", "x", Math.PI / 12, "-"]);
     ref.animations.push(a);
     finish(ref);
 };
