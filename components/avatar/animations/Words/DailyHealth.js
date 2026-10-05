@@ -73,36 +73,47 @@ export const WATER = (ref) => {
 };
 
 /**
- * SLEEP - Right palm placed against tilted cheek/head
+ * SLEEP - ISL "sleep": the right flat hand (B, fingers together) is laid
+ * against the right cheek, palm toward the face and fingers pointing up
+ * along the side of the head, and the head tilts to the right to rest on the
+ * palm (head-tilt is the obligatory non-manual of ISL SLEEP), settling in two
+ * small steps as if dozing off, then everything returns to rest.
+ *   stage 1  wrist ~[-12,67,13] cm beside the jaw, palm toward the cheek
+ *            (avatar-left/back), fingers up past the ear
+ *   stage 2-3 head tilts right (Neck.z) and slightly forward onto the palm,
+ *            light cheek-on-palm contact
  */
 export const SLEEP = (ref) => {
     let a = [];
-    // Stage 1: Right hand flat against right cheek, head tilted
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/3.2, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/6, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/4, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI/2.1, "+"]);
-    a.push(["mixamorigRightHand", "rotation", "z", -Math.PI/6, "-"]);
-    a.push(["mixamorigRightHand", "rotation", "y", Math.PI/4, "+"]);
-    a.push(["mixamorigNeck", "rotation", "z", -Math.PI/7, "-"]);
-    a.push(["mixamorigNeck", "rotation", "x", Math.PI/8, "+"]);
+    // Stage 1: flat hand rises to the right cheek, palm toward the face.
+    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI / 4, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", Math.PI / 6, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI / 1.35, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "y", Math.PI / 8, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "z", -Math.PI / 3.2, "-"]);
     ref.animations.push(a);
 
-    // Stage 2: Hold resting pose
+    // Stage 2: the head starts to lean right onto the palm.
     a = [];
-    a.push(["mixamorigNeck", "rotation", "x", Math.PI/7, "+"]);
+    a.push(["mixamorigNeck", "rotation", "z", Math.PI / 20, "+"]);
+    a.push(["mixamorigNeck", "rotation", "x", Math.PI / 10, "+"]);
     ref.animations.push(a);
 
-    // Reset
+    // Stage 3: the head settles fully onto the hand (asleep).
+    a = [];
+    a.push(["mixamorigNeck", "rotation", "z", Math.PI / 13, "+"]);
+    a.push(["mixamorigNeck", "rotation", "x", Math.PI / 9, "+"]);
+    ref.animations.push(a);
+
+    // Return to the neutral pose.
     a = [];
     a.push(["mixamorigRightArm", "rotation", "x", 0, "+"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/3, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", 0, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/1.5, "+"]);
-    a.push(["mixamorigRightHand", "rotation", "z", 0, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 0, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI / 1.5, "-"]);
     a.push(["mixamorigRightHand", "rotation", "y", 0, "-"]);
-    a.push(["mixamorigNeck", "rotation", "z", 0, "+"]);
-    a.push(["mixamorigNeck", "rotation", "x", Math.PI/12, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "z", 0, "+"]);
+    a.push(["mixamorigNeck", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigNeck", "rotation", "x", Math.PI / 12, "-"]);
     ref.animations.push(a);
 
     finish(ref);
