@@ -481,42 +481,93 @@ export const KNOW = (ref) => {
 };
 
 /**
- * UNDERSTAND - Right fist near temple, index finger flicking up with an 'aha' nod
+ * UNDERSTAND (ISL) - one hand at the forehead, handshape change.
+ * Handshape: starts as a closed fist with the thumb out (thumb tip pointing
+ * back toward the forehead), then the index finger springs straight up
+ * (index + thumb extended).
+ * Location / orientation: held close in front of the right side of the
+ * forehead (no contact), knuckles up, palm facing the avatar's left / head.
+ * Movement: the index flicks up from the fist twice (closed -> open, closed
+ * -> open) with a small 'got it' nod on each flick, then the hand returns to
+ * rest. (Differs from KNOW, where the closed thumb-out fist taps the temple
+ * with the thumb and never opens.)
  */
 export const UNDERSTAND = (ref) => {
     let a = [];
-    // Stage 1: Right hand fist near temple
-    a.push(["mixamorigRightHandIndex1", "rotation", "z", Math.PI/2, "+"]);
-    a.push(["mixamorigRightHandIndex2", "rotation", "z", Math.PI/2, "+"]);
+    // Stage 1: closed fist, thumb out, raised in front of the right forehead
+    a.push(["mixamorigRightHandIndex1", "rotation", "z", 1.35, "+"]);
+    a.push(["mixamorigRightHandIndex2", "rotation", "z", 1.35, "+"]);
+    a.push(["mixamorigRightHandIndex3", "rotation", "z", 0.9, "+"]);
     a.push(["mixamorigRightHandMiddle1", "rotation", "z", Math.PI/2, "+"]);
+    a.push(["mixamorigRightHandMiddle2", "rotation", "z", Math.PI/2, "+"]);
+    a.push(["mixamorigRightHandMiddle3", "rotation", "z", Math.PI/3, "+"]);
     a.push(["mixamorigRightHandRing1", "rotation", "z", Math.PI/2, "+"]);
+    a.push(["mixamorigRightHandRing2", "rotation", "z", Math.PI/2, "+"]);
+    a.push(["mixamorigRightHandRing3", "rotation", "z", Math.PI/3, "+"]);
     a.push(["mixamorigRightHandPinky1", "rotation", "z", Math.PI/2, "+"]);
-    a.push(["mixamorigRightHandThumb1", "rotation", "x", Math.PI/3, "+"]);
+    a.push(["mixamorigRightHandPinky2", "rotation", "z", Math.PI/2, "+"]);
+    a.push(["mixamorigRightHandPinky3", "rotation", "z", Math.PI/3, "+"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "y", 0.6, "+"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "z", -0.6, "-"]);
 
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/3.2, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/5, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/4, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI/2.1, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "x", -1.085, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 0.709, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "z", 1.25, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", -0.1, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", 1.565, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "z", -0.1, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "x", 0.245, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "y", -0.072, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "z", -0.569, "-"]);
     ref.animations.push(a);
 
-    // Stage 2: Flick index finger up & nod
+    // Stage 2: index finger flicks straight up, small nod
     a = [];
     a.push(["mixamorigRightHandIndex1", "rotation", "z", 0, "-"]);
     a.push(["mixamorigRightHandIndex2", "rotation", "z", 0, "-"]);
-    a.push(["mixamorigNeck", "rotation", "x", Math.PI/6, "+"]);
+    a.push(["mixamorigRightHandIndex3", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigNeck", "rotation", "x", Math.PI/12 + 0.14, "+"]);
     ref.animations.push(a);
 
-    // Reset
+    // Stage 3: index curls back into the fist, head comes back up
+    a = [];
+    a.push(["mixamorigRightHandIndex1", "rotation", "z", 1.35, "+"]);
+    a.push(["mixamorigRightHandIndex2", "rotation", "z", 1.35, "+"]);
+    a.push(["mixamorigRightHandIndex3", "rotation", "z", 0.9, "+"]);
+    a.push(["mixamorigNeck", "rotation", "x", Math.PI/12, "-"]);
+    ref.animations.push(a);
+
+    // Stage 4: index finger flicks straight up, small nod
+    a = [];
+    a.push(["mixamorigRightHandIndex1", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandIndex2", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandIndex3", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigNeck", "rotation", "x", Math.PI/12 + 0.14, "+"]);
+    ref.animations.push(a);
+
+    // Reset to the default pose
     a = [];
     a.push(["mixamorigRightHandMiddle1", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandMiddle2", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandMiddle3", "rotation", "z", 0, "-"]);
     a.push(["mixamorigRightHandRing1", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandRing2", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandRing3", "rotation", "z", 0, "-"]);
     a.push(["mixamorigRightHandPinky1", "rotation", "z", 0, "-"]);
-    a.push(["mixamorigRightHandThumb1", "rotation", "x", 0, "-"]);
+    a.push(["mixamorigRightHandPinky2", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandPinky3", "rotation", "z", 0, "-"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "y", 0, "-"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "z", 0, "+"]);
 
     a.push(["mixamorigRightArm", "rotation", "x", 0, "+"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/3, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", 0, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 0, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/3, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", 0, "+"]);
     a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/1.5, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "z", 0, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "x", 0, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "y", 0, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "z", 0, "+"]);
     a.push(["mixamorigNeck", "rotation", "x", Math.PI/12, "-"]);
     ref.animations.push(a);
 
