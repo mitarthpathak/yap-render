@@ -362,51 +362,76 @@ export const MEET = (ref) => {
 };
 
 /**
- * MORNING (ISL) - the sun coming up. The left flat hand, palm down, lies
- * horizontal across the body at lower-chest height with its fingertips at the
- * inside of the right elbow (the horizon). The right flat hand starts with the
- * forearm lying across the body above it, fingers pointing left and palm toward
- * the body; keeping the elbow in place over the left hand, the right forearm
- * then rises up beside the face, fingers up and palm facing the signer, like the
- * sun rising over the horizon. The head lifts as the sun rises.
+ * MORNING (ISL) - the sun coming up over the horizon. Both hands flat. The left
+ * forearm lies horizontal across the body at lower-chest height, palm down,
+ * its fingers passing under the right elbow (the horizon). The right forearm
+ * starts lying across the body just above it, fingers pointing left and palm
+ * toward the body. With the right elbow resting on the left hand as the pivot,
+ * the right forearm swings up around the upper arm's own axis (RightForeArm.x)
+ * until it stands upright (about 18 degrees from vertical) with the hand beside
+ * the right side of the face, fingers up and palm facing the signer, like the
+ * sun rising. The head lifts as the sun rises.
  */
 export const MORNING = (ref) => {
     let a = [];
-    // Left forearm: the horizon, fingertips at the right elbow.
-    a.push(["mixamorigLeftArm", "rotation", "x", -0.35, "-"]);
-    a.push(["mixamorigLeftArm", "rotation", "z", -1.0, "+"]);
-    a.push(["mixamorigLeftArm", "rotation", "y", -1.4, "-"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "y", -1.45, "+"]);
+    // Left forearm: the horizon, fingers under the right elbow.
+    a.push(["mixamorigLeftArm", "rotation", "x", -0.28, "-"]);
+    a.push(["mixamorigLeftArm", "rotation", "y", -1.46, "-"]);
+    a.push(["mixamorigLeftArm", "rotation", "z", -0.83, "+"]);
+    a.push(["mixamorigLeftForeArm", "rotation", "y", -1.46, "+"]);
+    a.push(["mixamorigLeftHand", "rotation", "x", 0.55, "+"]);
+    a.push(["mixamorigLeftHand", "rotation", "y", -0.37, "-"]);
 
-    // Right forearm lies across the body, palm toward the body.
-    a.push(["mixamorigRightArm", "rotation", "x", -0.6, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "z", 0.9, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "y", 1.3, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", 1.3, "-"]);
-    a.push(["mixamorigRightHand", "rotation", "x", -1.2, "-"]);
+    // Right forearm lies across the body above it, palm toward the body,
+    // elbow on the left hand.
+    a.push(["mixamorigRightArm", "rotation", "x", -0.63, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 1.28, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "z", 0.98, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", -0.2, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", 1.34, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "x", -1.22, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "z", 0.24, "+"]);
     a.push(["mixamorigNeck", "rotation", "x", Math.PI/9, "+"]);
     ref.animations.push(a);
 
-    // The sun rises: the forearm pivots up at the elbow to beside the face.
+    // The sun rises: the forearm swings up about the upper-arm axis while the
+    // elbow stays on the left hand.
     a = [];
-    a.push(["mixamorigRightArm", "rotation", "y", 0.3, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", 2.0, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "x", -0.75, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 1.19, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "z", 1.16, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", -1.03, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", 1.8, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "x", -1.63, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "y", 0.16, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "z", 0.15, "-"]);
     a.push(["mixamorigNeck", "rotation", "x", 0, "-"]);
     ref.animations.push(a);
 
-    // Reset.
+    // Reset: the right arm drops back to rest while the left forearm first
+    // swings forward off the body, then settles (keeps it clear of the torso).
     a = [];
-    a.push(["mixamorigLeftArm", "rotation", "x", 0, "+"]);
-    a.push(["mixamorigLeftArm", "rotation", "z", -Math.PI/3, "-"]);
-    a.push(["mixamorigLeftArm", "rotation", "y", 0, "+"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "y", -Math.PI/1.5, "-"]);
+    a.push(["mixamorigLeftArm", "rotation", "y", -0.7, "+"]);
+    a.push(["mixamorigLeftForeArm", "rotation", "y", -1.2, "+"]);
 
     a.push(["mixamorigRightArm", "rotation", "x", 0, "+"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/3, "+"]);
     a.push(["mixamorigRightArm", "rotation", "y", 0, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/3, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", 0, "+"]);
     a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/1.5, "+"]);
     a.push(["mixamorigRightHand", "rotation", "x", 0, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "y", 0, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "z", 0, "-"]);
     a.push(["mixamorigNeck", "rotation", "x", Math.PI/12, "+"]);
+    ref.animations.push(a);
+
+    a = [];
+    a.push(["mixamorigLeftArm", "rotation", "x", 0, "+"]);
+    a.push(["mixamorigLeftArm", "rotation", "y", 0, "+"]);
+    a.push(["mixamorigLeftArm", "rotation", "z", -Math.PI/3, "-"]);
+    a.push(["mixamorigLeftForeArm", "rotation", "y", -Math.PI/1.5, "-"]);
+    a.push(["mixamorigLeftHand", "rotation", "x", 0, "-"]);
+    a.push(["mixamorigLeftHand", "rotation", "y", 0, "+"]);
     ref.animations.push(a);
     finish(ref);
 };
