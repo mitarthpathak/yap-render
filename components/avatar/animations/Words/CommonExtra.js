@@ -303,34 +303,35 @@ export const MEET = (ref) => {
 };
 
 /**
- * MORNING - the non-dominant (left) forearm lies flat and horizontal across the
- * body as the horizon; the dominant (right) flat hand starts tucked low at that
- * elbow and rises up and over it, like the sun coming up. The head lifts.
+ * MORNING (ISL) - the sun coming up. The left flat hand, palm down, lies
+ * horizontal across the body at lower-chest height with its fingertips at the
+ * inside of the right elbow (the horizon). The right flat hand starts with the
+ * forearm lying across the body above it, fingers pointing left and palm toward
+ * the body; keeping the elbow in place over the left hand, the right forearm
+ * then rises up beside the face, fingers up and palm facing the signer, like the
+ * sun rising over the horizon. The head lifts as the sun rises.
  */
 export const MORNING = (ref) => {
     let a = [];
-    // Left forearm becomes the flat horizon (HELP's flat-left-hand placement).
-    a.push(["mixamorigLeftArm", "rotation", "x", -Math.PI/4, "-"]);
-    a.push(["mixamorigLeftArm", "rotation", "z", -Math.PI/6, "+"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "y", -Math.PI/3.5, "+"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "x", Math.PI/4, "+"]);
-    a.push(["mixamorigLeftHand", "rotation", "y", -Math.PI/4, "-"]);
+    // Left forearm: the horizon, fingertips at the right elbow.
+    a.push(["mixamorigLeftArm", "rotation", "x", -0.35, "-"]);
+    a.push(["mixamorigLeftArm", "rotation", "z", -1.0, "+"]);
+    a.push(["mixamorigLeftArm", "rotation", "y", -1.4, "-"]);
+    a.push(["mixamorigLeftForeArm", "rotation", "y", -1.45, "+"]);
 
-    // Right flat hand tucked low, folded at the left elbow.
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/8, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI/6, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/6, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI/8, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "z", -Math.PI/2.5, "-"]);
-    a.push(["mixamorigRightHand", "rotation", "x", -Math.PI/6, "-"]);
-    a.push(["mixamorigNeck", "rotation", "x", Math.PI/8, "+"]);
+    // Right forearm lies across the body, palm toward the body.
+    a.push(["mixamorigRightArm", "rotation", "x", -0.6, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "z", 0.9, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 1.3, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", 1.3, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "x", -1.2, "-"]);
+    a.push(["mixamorigNeck", "rotation", "x", Math.PI/9, "+"]);
     ref.animations.push(a);
 
-    // The sun rises: elbow unfolds, forearm sweeps up over the horizon.
+    // The sun rises: the forearm pivots up at the elbow to beside the face.
     a = [];
-    a.push(["mixamorigRightForeArm", "rotation", "z", -Math.PI/9, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", Math.PI/2.8, "+"]);
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI/3.5, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 0.3, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", 2.0, "+"]);
     a.push(["mixamorigNeck", "rotation", "x", 0, "-"]);
     ref.animations.push(a);
 
@@ -338,15 +339,13 @@ export const MORNING = (ref) => {
     a = [];
     a.push(["mixamorigLeftArm", "rotation", "x", 0, "+"]);
     a.push(["mixamorigLeftArm", "rotation", "z", -Math.PI/3, "-"]);
+    a.push(["mixamorigLeftArm", "rotation", "y", 0, "+"]);
     a.push(["mixamorigLeftForeArm", "rotation", "y", -Math.PI/1.5, "-"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "x", 0, "-"]);
-    a.push(["mixamorigLeftHand", "rotation", "y", 0, "+"]);
 
     a.push(["mixamorigRightArm", "rotation", "x", 0, "+"]);
     a.push(["mixamorigRightArm", "rotation", "z", Math.PI/3, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 0, "-"]);
     a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/1.5, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", 0, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "z", 0, "+"]);
     a.push(["mixamorigRightHand", "rotation", "x", 0, "+"]);
     a.push(["mixamorigNeck", "rotation", "x", Math.PI/12, "+"]);
     ref.animations.push(a);
