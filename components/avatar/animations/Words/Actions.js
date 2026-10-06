@@ -768,60 +768,54 @@ export const UNDERSTAND = (ref) => {
 };
 
 /**
- * ASK (ISL) - one hand, directional verb moving from the signer toward the
- * person being asked.
- * Handshape: index finger extended (middle, ring and little finger curled,
- * thumb folded against the side), crooking into a hooked 'X' index as the
- * hand moves out.
- * Location / orientation: starts in front of the mouth/chin with the index
- * pointing up and the palm facing the avatar's left; ends ~20 cm further out
- * toward the listener at chest-chin height, palm still facing left so the
- * hook is seen in profile.
- * Movement: one forward push from the mouth toward the addressee while the
- * index bends into the hook, with the head tilting slightly forward (ISL
- * question face), then the hand returns to rest.
- * (Differs from TELL / ANSWER, whose straight index moves out from the chin
- * without hooking.)
+ * ASK (ISL) - one hand, directional verb moving from the asker toward the
+ * person being asked (ISL HamNoSys corpus entries ASK / ASK2: open pinch at
+ * the lips/chin moving out; ASK QUESTION / ASK ANYTHING: the same open pinch,
+ * palm left, on the reversed path toward the signer).
+ * Handshape: open pinch - thumb and index curved toward each other without
+ * touching (a small 'C' gap), middle, ring and little fingers extended.
+ * Location / orientation: starts close in front of the chin/mouth, fingers
+ * up, palm facing the avatar's left, so the thumb/index 'C' is seen from
+ * the front.
+ * Movement: one large, tense move straight out from the chin toward the
+ * addressee (~17 cm), the hand tipping forward so the fingers end pointing
+ * out at the listener (palm still facing left), with the head tilting
+ * slightly forward (ISL question face); then the hand returns to rest.
+ * (Differs from TELL / ANSWER, whose single straight index moves out from
+ * the chin, and from LIKE, whose open pinch plucks twice at the chest.)
  */
 export const ASK = (ref) => {
     let a = [];
-    // Stage 1: index hand raised in front of the mouth, index pointing up
-    a.push(["mixamorigRightHandMiddle1", "rotation", "z", Math.PI/2, "+"]);
-    a.push(["mixamorigRightHandMiddle2", "rotation", "z", Math.PI/2, "+"]);
-    a.push(["mixamorigRightHandMiddle3", "rotation", "z", Math.PI/3, "+"]);
-    a.push(["mixamorigRightHandRing1", "rotation", "z", Math.PI/2, "+"]);
-    a.push(["mixamorigRightHandRing2", "rotation", "z", Math.PI/2, "+"]);
-    a.push(["mixamorigRightHandRing3", "rotation", "z", Math.PI/3, "+"]);
-    a.push(["mixamorigRightHandPinky1", "rotation", "z", Math.PI/2, "+"]);
-    a.push(["mixamorigRightHandPinky2", "rotation", "z", Math.PI/2, "+"]);
-    a.push(["mixamorigRightHandPinky3", "rotation", "z", Math.PI/3, "+"]);
-    a.push(["mixamorigRightHandThumb1", "rotation", "z", -0.4, "-"]);
-    a.push(["mixamorigRightHandThumb2", "rotation", "y", -Math.PI/3, "-"]);
+    // Stage 1: open-pinch hand raised close in front of the chin, fingers up
+    a.push(["mixamorigRightHandIndex1", "rotation", "z", 0.6, "+"]);
+    a.push(["mixamorigRightHandIndex2", "rotation", "z", 0.8, "+"]);
+    a.push(["mixamorigRightHandIndex3", "rotation", "z", 0.6, "+"]);
+    a.push(["mixamorigRightHandMiddle1", "rotation", "z", 0.15, "+"]);
+    a.push(["mixamorigRightHandRing1", "rotation", "z", 0.2, "+"]);
+    a.push(["mixamorigRightHandPinky1", "rotation", "z", 0.25, "+"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "x", 0.35, "+"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "y", -0.2, "-"]);
+    a.push(["mixamorigRightHandThumb2", "rotation", "y", -0.3, "-"]);
 
-    a.push(["mixamorigRightArm", "rotation", "x", -0.474, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "y", 0.217, "+"]);
-    a.push(["mixamorigRightArm", "rotation", "z", 1.152, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", 0.156, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", 1.817, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "x", -0.75, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 0.3, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "z", 1.1, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "x", 0.15, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", 1.95, "-"]);
     a.push(["mixamorigRightForeArm", "rotation", "z", 0.25, "+"]);
-    a.push(["mixamorigRightHand", "rotation", "x", 0.388, "+"]);
-    a.push(["mixamorigRightHand", "rotation", "y", 0.653, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "x", 0.2, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "y", 0.65, "+"]);
     a.push(["mixamorigRightHand", "rotation", "z", -0.7, "-"]);
     ref.animations.push(a);
 
-    // Stage 2: push out toward the listener, index crooking into a hook,
-    // head tilting forward (question)
+    // Stage 2: large arc out toward the listener, hand tipping so the
+    // fingers point at the addressee; head tilts forward (question)
     a = [];
-    a.push(["mixamorigRightHandIndex1", "rotation", "z", 0.3, "+"]);
-    a.push(["mixamorigRightHandIndex2", "rotation", "z", 1.1, "+"]);
-    a.push(["mixamorigRightHandIndex3", "rotation", "z", 0.8, "+"]);
-    a.push(["mixamorigRightArm", "rotation", "x", -0.869, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "y", 0.621, "+"]);
-    a.push(["mixamorigRightArm", "rotation", "z", 1.17, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "x", 0.187, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", 1.132, "-"]);
-    a.push(["mixamorigRightHand", "rotation", "x", -0.339, "-"]);
-    a.push(["mixamorigRightHand", "rotation", "y", 0.533, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "x", -1.1, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 0.8, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", 1.0, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "x", -0.7, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "y", 0.1, "-"]);
     a.push(["mixamorigNeck", "rotation", "x", Math.PI/12 + 0.12, "+"]);
     ref.animations.push(a);
 
@@ -831,15 +825,10 @@ export const ASK = (ref) => {
     a.push(["mixamorigRightHandIndex2", "rotation", "z", 0, "-"]);
     a.push(["mixamorigRightHandIndex3", "rotation", "z", 0, "-"]);
     a.push(["mixamorigRightHandMiddle1", "rotation", "z", 0, "-"]);
-    a.push(["mixamorigRightHandMiddle2", "rotation", "z", 0, "-"]);
-    a.push(["mixamorigRightHandMiddle3", "rotation", "z", 0, "-"]);
     a.push(["mixamorigRightHandRing1", "rotation", "z", 0, "-"]);
-    a.push(["mixamorigRightHandRing2", "rotation", "z", 0, "-"]);
-    a.push(["mixamorigRightHandRing3", "rotation", "z", 0, "-"]);
     a.push(["mixamorigRightHandPinky1", "rotation", "z", 0, "-"]);
-    a.push(["mixamorigRightHandPinky2", "rotation", "z", 0, "-"]);
-    a.push(["mixamorigRightHandPinky3", "rotation", "z", 0, "-"]);
-    a.push(["mixamorigRightHandThumb1", "rotation", "z", 0, "+"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "x", 0, "-"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "y", 0, "+"]);
     a.push(["mixamorigRightHandThumb2", "rotation", "y", 0, "+"]);
 
     a.push(["mixamorigRightArm", "rotation", "x", 0, "+"]);
