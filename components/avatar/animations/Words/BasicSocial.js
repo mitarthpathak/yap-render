@@ -177,58 +177,51 @@ export const NO = (ref) => {
  * PLEASE - ISL "please": right flat hand (fingers together and extended),
  * palm flat on the centre of the chest, fingers pointing across to the left,
  * rubbed in small circles (two loops) on the chest with a polite expression.
- * Distinct from SORRY, which rubs a closed fist on the chest.
- * Circle points (wrist, cm; the palm lies ~7 cm further across the sternum):
- *   top [-8,57,20] -> outer [-10,55,20] -> bottom [-8,50,21] -> inner [-5,53,20]
+ * The palm stays in contact with the chest (palm-centre gap <= ~1.2 cm) all
+ * the way round; the left hand stays at rest, well clear of the right
+ * fingertips. Distinct from SORRY, which rubs a closed fist on the chest.
+ * The hand arrives at the outer (avatar's right) side of the circle, then
+ * circles twice. Circle points (palm centre, cm; ~8 cm across, centred on
+ * the sternum):
+ *   outer [-7,53] -> bottom [-2,49] -> inner [1,52] -> top [-2,57]
+ * The hand then lifts forward off the chest (~5 cm) before dropping to rest.
  */
 export const PLEASE = (ref) => {
-    let a = [];
-    // Stage 1: flat hand comes onto the chest (top of the circle), palm in.
-    a.push(["mixamorigRightArm", "rotation", "x", -0.40, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "y", 0.80, "+"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI / 3.6, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", 2.04, "-"]);
-    a.push(["mixamorigRightHand", "rotation", "x", -Math.PI / 3, "-"]);
-    a.push(["mixamorigRightHand", "rotation", "y", -Math.PI / 6, "-"]);
-    a.push(["mixamorigRightHand", "rotation", "z", Math.PI / 12, "+"]);
-    ref.animations.push(a);
+    // Pose columns: RightArm.x, RightArm.y, RightArm.z, RightForeArm.y,
+    // RightHand.x, RightHand.y, RightHand.z.
+    const axes = [
+        ["mixamorigRightArm", "x"], ["mixamorigRightArm", "y"], ["mixamorigRightArm", "z"],
+        ["mixamorigRightForeArm", "y"],
+        ["mixamorigRightHand", "x"], ["mixamorigRightHand", "y"], ["mixamorigRightHand", "z"],
+    ];
+    const rest = [0, 0, Math.PI / 3, Math.PI / 1.5, 0, 0, 0];
+    const top = [-0.357, 0.588, 1.238, 2.174, -0.787, -0.428, 0.751];
+    const outer = [-0.115, 0.459, 1.129, 2.116, -1.036, -0.243, 0.892];
+    const bottom = [-0.147, 0.567, 1.278, 1.965, -1.032, -0.468, 0.807];
+    const inner = [-0.298, 0.741, 1.234, 1.959, -0.992, -0.352, 0.79];
+    const liftOff = [-0.323, 0.589, 1.186, 1.865, -1.02, -0.31, 0.876];
 
-    // Stage 2: rub two circles on the chest: outer -> bottom -> inner -> top.
-    for (let loop = 0; loop < 2; loop++) {
-        a = [];
-        a.push(["mixamorigRightArm", "rotation", "x", -0.27, "+"]);
-        a.push(["mixamorigRightArm", "rotation", "y", 0.68, "-"]);
-        a.push(["mixamorigRightForeArm", "rotation", "y", 2.10, "+"]);
+    let cur = rest;
+    const goTo = (pose) => {
+        const a = [];
+        axes.forEach(([bone, axis], i) => {
+            if (pose[i] !== cur[i]) a.push([bone, "rotation", axis, pose[i], pose[i] > cur[i] ? "+" : "-"]);
+        });
         ref.animations.push(a);
-        a = [];
-        a.push(["mixamorigRightArm", "rotation", "x", -0.16, "+"]);
-        a.push(["mixamorigRightArm", "rotation", "y", 0.80, "+"]);
-        a.push(["mixamorigRightForeArm", "rotation", "y", 1.97, "-"]);
-        ref.animations.push(a);
-        a = [];
-        a.push(["mixamorigRightArm", "rotation", "x", -0.28, "-"]);
-        a.push(["mixamorigRightArm", "rotation", "y", 0.90, "+"]);
-        a.push(["mixamorigRightForeArm", "rotation", "y", 1.98, "+"]);
-        ref.animations.push(a);
-        if (loop === 0) {
-            a = [];
-            a.push(["mixamorigRightArm", "rotation", "x", -0.40, "-"]);
-            a.push(["mixamorigRightArm", "rotation", "y", 0.80, "-"]);
-            a.push(["mixamorigRightForeArm", "rotation", "y", 2.04, "+"]);
-            ref.animations.push(a);
-        }
-    }
+        cur = pose;
+    };
 
-    // Stage 3: reset to the shared rest pose.
-    a = [];
-    a.push(["mixamorigRightArm", "rotation", "x", 0, "+"]);
-    a.push(["mixamorigRightArm", "rotation", "y", 0, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "z", Math.PI / 3, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI / 1.5, "+"]);
-    a.push(["mixamorigRightHand", "rotation", "x", 0, "+"]);
-    a.push(["mixamorigRightHand", "rotation", "y", 0, "+"]);
-    a.push(["mixamorigRightHand", "rotation", "z", 0, "-"]);
-    ref.animations.push(a);
+    // Stage 1: flat hand comes onto the chest, palm in (outer side of the
+    // circle).
+    goTo(outer);
+    // Stage 2: rub two circles on the chest: bottom -> inner -> top -> outer.
+    goTo(bottom); goTo(inner); goTo(top);
+    goTo(outer);
+    goTo(bottom); goTo(inner); goTo(top);
+    // Stage 3: lift the hand forward off the chest.
+    goTo(liftOff);
+    // Stage 4: reset to the shared rest pose.
+    goTo(rest);
 
     finish(ref);
 };
