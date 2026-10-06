@@ -424,25 +424,25 @@ export const TEACHER = (ref) => {
 /**
  * STUDENT (ISL) - compound LEARN + PERSON.
  * LEARN: the left hand is flat, palm up, in front of the body; the right open
- * hand touches the left palm with its fingertips, closes into a flat 'O' as if
- * picking something up, and carries it up until the fingertips touch the
- * forehead.
+ * hand touches the centre of the left palm with its fingertips, closes into a
+ * flat 'O' as if picking something up, and carries it up until the bunched
+ * fingertips touch the forehead; the left hand drops back to rest meanwhile.
  * PERSON: the right hand in an 'I' (little finger up, other fingers closed,
  * thumb across them), palm facing left, in front of the chest, moves straight
- * down; the left hand returns to rest.
+ * down.
  * (Distinct from TEACHER = TEACH + PERSON: both hands from the head outward.)
  */
 export const STUDENT = (ref) => {
     let a = [];
     // LEARN: left flat palm up in front of the body; right open hand, fingers down, touches the left palm
     a.push(["mixamorigLeftArm", "rotation", "x", -0.178, "-"]);
-    a.push(["mixamorigLeftArm", "rotation", "y", -0.498, "-"]);
+    a.push(["mixamorigLeftArm", "rotation", "y", -0.57, "-"]);
     a.push(["mixamorigLeftArm", "rotation", "z", -1.309, "-"]);
     a.push(["mixamorigLeftForeArm", "rotation", "x", 0.035, "+"]);
     a.push(["mixamorigLeftForeArm", "rotation", "y", -1.617, "+"]);
-    a.push(["mixamorigLeftHand", "rotation", "x", -1.891, "-"]);
-    a.push(["mixamorigLeftHand", "rotation", "y", -0.077, "-"]);
-    a.push(["mixamorigLeftHand", "rotation", "z", 0.206, "+"]);
+    a.push(["mixamorigLeftHand", "rotation", "x", -1.45, "-"]);
+    a.push(["mixamorigLeftHand", "rotation", "y", -0.3, "-"]);
+    a.push(["mixamorigLeftHand", "rotation", "z", 0.4, "+"]);
     a.push(["mixamorigRightArm", "rotation", "x", -0.571, "-"]);
     a.push(["mixamorigRightArm", "rotation", "y", 0.533, "+"]);
     a.push(["mixamorigRightArm", "rotation", "z", 0.849, "-"]);
@@ -477,28 +477,37 @@ export const STUDENT = (ref) => {
     a.push(["mixamorigRightHandThumb1", "rotation", "z", 0.105, "+"]);
     a.push(["mixamorigRightHandThumb2", "rotation", "y", -0.072, "-"]);
     a.push(["mixamorigRightHandThumb2", "rotation", "z", 0.04, "+"]);
-    a.push(["mixamorigRightArm", "rotation", "x", -0.658, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "y", 0.8, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "x", -0.76, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 1.0, "+"]);
     a.push(["mixamorigRightArm", "rotation", "z", 1.022, "+"]);
     a.push(["mixamorigRightForeArm", "rotation", "x", -0.074, "-"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", 1.594, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", 1.45, "-"]);
     a.push(["mixamorigRightForeArm", "rotation", "z", 0.208, "-"]);
     a.push(["mixamorigRightHand", "rotation", "x", -0.09, "+"]);
     ref.animations.push(a);
 
-    // LEARN: the flat 'O' rises and its fingertips touch the forehead
+    // LEARN: the flat 'O' rises and its fingertips touch the forehead; the left hand starts returning to rest
     a = [];
     a.push(["mixamorigRightArm", "rotation", "x", -0.823, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 0.8, "-"]);
     a.push(["mixamorigRightArm", "rotation", "z", 1.243, "+"]);
     a.push(["mixamorigRightForeArm", "rotation", "x", 0.042, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", 2.042, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", 2.06, "+"]);
     a.push(["mixamorigRightForeArm", "rotation", "z", -0.161, "-"]);
     a.push(["mixamorigRightHand", "rotation", "x", -1.208, "-"]);
-    a.push(["mixamorigRightHand", "rotation", "y", 0.288, "+"]);
-    a.push(["mixamorigRightHand", "rotation", "z", -0.6, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "y", 0.2, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "z", -0.5, "-"]);
+    a.push(["mixamorigLeftArm", "rotation", "x", 0, "+"]);
+    a.push(["mixamorigLeftArm", "rotation", "y", 0, "+"]);
+    a.push(["mixamorigLeftArm", "rotation", "z", -Math.PI/3, "+"]);
+    a.push(["mixamorigLeftForeArm", "rotation", "x", 0, "-"]);
+    a.push(["mixamorigLeftForeArm", "rotation", "y", -Math.PI/1.5, "-"]);
+    a.push(["mixamorigLeftHand", "rotation", "x", -0.3, "+"]);
+    a.push(["mixamorigLeftHand", "rotation", "y", 0, "+"]);
+    a.push(["mixamorigLeftHand", "rotation", "z", 0, "-"]);
     ref.animations.push(a);
 
-    // PERSON: right 'I' hand (little finger up) in front of the chest; left hand returns to rest
+    // PERSON: right 'I' hand (little finger up) in front of the chest; left hand finishes returning to rest
     a = [];
     a.push(["mixamorigRightHandIndex1", "rotation", "z", 1.571, "+"]);
     a.push(["mixamorigRightHandIndex2", "rotation", "z", 1.571, "+"]);
@@ -531,14 +540,7 @@ export const STUDENT = (ref) => {
     a.push(["mixamorigRightHand", "rotation", "x", -0.8, "+"]);
     a.push(["mixamorigRightHand", "rotation", "y", 0.7, "+"]);
     a.push(["mixamorigRightHand", "rotation", "z", 0.027, "+"]);
-    a.push(["mixamorigLeftArm", "rotation", "x", 0, "+"]);
-    a.push(["mixamorigLeftArm", "rotation", "y", 0, "+"]);
-    a.push(["mixamorigLeftArm", "rotation", "z", -Math.PI/3, "+"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "x", 0, "-"]);
-    a.push(["mixamorigLeftForeArm", "rotation", "y", -Math.PI/1.5, "-"]);
     a.push(["mixamorigLeftHand", "rotation", "x", 0, "+"]);
-    a.push(["mixamorigLeftHand", "rotation", "y", 0, "+"]);
-    a.push(["mixamorigLeftHand", "rotation", "z", 0, "-"]);
     ref.animations.push(a);
 
     // PERSON: the 'I' hand moves straight down, little finger kept pointing up
