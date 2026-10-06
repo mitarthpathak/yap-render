@@ -589,30 +589,42 @@ export const HELLO = (ref) => {
 
 /**
  * THANK_YOU - ISL "thank you": right flat hand (B, fingers together, thumb
- * alongside), fingertips touching the chin with the palm toward the face,
+ * alongside), fingertips touching the lips/chin with the palm toward the face,
  * then the hand moves forward and down toward the person thanked, opening to
  * palm-up, with a small bow of the head. One outward movement, then rest.
- *   stage 1  wrist ~[-5,53,27] cm, index tip ~[-1,72,16] at the chin/lower
- *            lip, palm toward the face, fingers up
- *   stage 2  wrist ~[-15,48,42], hand out in front of the chest, palm up,
- *            fingers toward the person
+ *   stage 1a wrist ~[-17,54,18] cm, flat hand up in front of the mouth,
+ *            palm toward the face, fingers up (elbow low at the side)
+ *   stage 1b fingertips tip back onto the lips (middle tip ~[-2,72,16],
+ *            index tip ~[-5,73,15]); wrist bend ~40 deg, almost all palm-ward
+ *            flexion (radial/sideways bend ~10 deg)
+ *   stage 2  wrist ~[-16,48,40], hand out in front of the chest, palm up,
+ *            fingers toward the person, head bowed
  */
 export const THANK_YOU = (ref) => {
     let a = [];
-    // Stage 1: flat hand rises to the chin, fingertips on the chin, palm in.
-    a.push(["mixamorigRightArm", "rotation", "x", -Math.PI / 6.5, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "y", Math.PI / 3.5, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI / 1.85, "-"]);
-    a.push(["mixamorigRightHand", "rotation", "x", -Math.PI / 2, "-"]);
-    a.push(["mixamorigRightHand", "rotation", "y", Math.PI / 4, "+"]);
-    a.push(["mixamorigRightHand", "rotation", "z", Math.PI / 2.8, "+"]);
+    // Stage 1a: flat hand rises in front of the face, fingers up, palm in.
+    // Elbow low at the side, forearm angled up and in.
+    a.push(["mixamorigRightArm", "rotation", "x", -0.225, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 0.283, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "z", 1.176, "+"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", 2.208, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "x", -1.054, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "y", 0.141, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "z", 0.3, "+"]);
+    ref.animations.push(a);
+
+    // Stage 1b: the fingertips tip back onto the lips (palm-ward wrist flexion
+    // ~40 deg, sideways/radial bend ~10 deg).
+    a = [];
+    a.push(["mixamorigRightHand", "rotation", "z", 0.692, "+"]);
     ref.animations.push(a);
 
     // Stage 2: hand moves forward and down off the chin toward the person,
     // the palm turning up; the head gives a small bow.
     a = [];
     a.push(["mixamorigRightArm", "rotation", "x", -Math.PI / 5, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "y", Math.PI / 4, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", Math.PI / 4, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "z", Math.PI / 3, "-"]);
     a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI / 3, "-"]);
     a.push(["mixamorigRightHand", "rotation", "x", -Math.PI / 1.5, "-"]);
     a.push(["mixamorigRightHand", "rotation", "y", 0, "-"]);
