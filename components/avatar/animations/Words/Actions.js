@@ -637,54 +637,56 @@ export const UNDERSTAND = (ref) => {
 };
 
 /**
- * ASK (ISL) - one hand, directional verb moving from the asker toward the
- * person being asked (ISL HamNoSys corpus entries ASK / ASK2: open pinch at
- * the lips/chin moving out; ASK QUESTION / ASK ANYTHING: the same open pinch,
- * palm left, on the reversed path toward the signer).
- * Handshape: open pinch - thumb and index curved toward each other without
- * touching (a small 'C' gap), middle, ring and little fingers extended.
- * Location / orientation: starts close in front of the chin/mouth, fingers
- * up, palm facing the avatar's left, so the thumb/index 'C' is seen from
- * the front.
- * Movement: one large, tense move straight out from the chin toward the
- * addressee (~17 cm), the hand tipping forward so the fingers end pointing
- * out at the listener (palm still facing left), with the head tilting
- * slightly forward (ISL question face); then the hand returns to rest.
- * (Differs from TELL / ANSWER, whose single straight index moves out from
- * the chin, and from LIKE, whose open pinch plucks twice at the chest.)
+ * ASK (ISL) - one hand, open pinch drawn in from arm's length to the chest.
+ * Source: the ISL HamNoSys (eSign) entries "ask question" / "ask anything"
+ * (askquestion.sigml / askanything.sigml, shipped identically by several
+ * ISL text-to-sign corpora): hampinchopen, extfinger left-between-out,
+ * palm left, chest, arm extended, move in.
+ * Handshape: open pinch - index finger curved down toward the raised thumb
+ * with a small gap between their tips; middle, ring and little fingers
+ * extended.
+ * Location / orientation: chest height, in front of the right chest, arm
+ * extended forward; fingers point out and toward the avatar's left, palm
+ * facing the avatar's left.
+ * Movement: one move straight in toward the signer's chest (~17 cm), the
+ * open pinch held, with the head tilting slightly forward (ISL question
+ * face); then the hand returns to rest.
+ * (Differs from TELL / ANSWER - straight index from the chin - from LIKE -
+ * fingers-up pinch closing on the chest and plucking out twice - and from
+ * TAKE / COME / WANT - hand closing or palm-up beckoning.)
  */
 export const ASK = (ref) => {
     let a = [];
-    // Stage 1: open-pinch hand raised close in front of the chin, fingers up
-    a.push(["mixamorigRightHandIndex1", "rotation", "z", 0.6, "+"]);
-    a.push(["mixamorigRightHandIndex2", "rotation", "z", 0.8, "+"]);
-    a.push(["mixamorigRightHandIndex3", "rotation", "z", 0.6, "+"]);
-    a.push(["mixamorigRightHandMiddle1", "rotation", "z", 0.15, "+"]);
-    a.push(["mixamorigRightHandRing1", "rotation", "z", 0.2, "+"]);
-    a.push(["mixamorigRightHandPinky1", "rotation", "z", 0.25, "+"]);
-    a.push(["mixamorigRightHandThumb1", "rotation", "x", 0.35, "+"]);
-    a.push(["mixamorigRightHandThumb1", "rotation", "y", -0.2, "-"]);
-    a.push(["mixamorigRightHandThumb2", "rotation", "y", -0.3, "-"]);
+    // Stage 1: open pinch held out at arm's length, chest height, fingers
+    // pointing out-left, palm left
+    a.push(["mixamorigRightHandIndex1", "rotation", "z", 0.7, "+"]);
+    a.push(["mixamorigRightHandIndex2", "rotation", "z", 1.2, "+"]);
+    a.push(["mixamorigRightHandIndex3", "rotation", "z", 0.9, "+"]);
+    a.push(["mixamorigRightHandMiddle1", "rotation", "z", 0.1, "+"]);
+    a.push(["mixamorigRightHandRing1", "rotation", "z", 0.15, "+"]);
+    a.push(["mixamorigRightHandPinky1", "rotation", "z", 0.2, "+"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "x", 0.5, "+"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "z", 0.4, "+"]);
+    a.push(["mixamorigRightHandThumb2", "rotation", "y", -0.2, "-"]);
 
-    a.push(["mixamorigRightArm", "rotation", "x", -0.75, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "y", 0.3, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "x", -0.95, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 0.8, "+"]);
     a.push(["mixamorigRightArm", "rotation", "z", 1.1, "+"]);
     a.push(["mixamorigRightForeArm", "rotation", "x", 0.15, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", 1.95, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", 1.0, "-"]);
     a.push(["mixamorigRightForeArm", "rotation", "z", 0.25, "+"]);
-    a.push(["mixamorigRightHand", "rotation", "x", 0.2, "+"]);
-    a.push(["mixamorigRightHand", "rotation", "y", 0.65, "+"]);
-    a.push(["mixamorigRightHand", "rotation", "z", -0.7, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "x", -1.2, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "y", -0.25, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "z", -0.15, "-"]);
     ref.animations.push(a);
 
-    // Stage 2: large arc out toward the listener, hand tipping so the
-    // fingers point at the addressee; head tilts forward (question)
+    // Stage 2: draw the pinch straight in toward the chest; head tilts
+    // forward (question)
     a = [];
-    a.push(["mixamorigRightArm", "rotation", "x", -1.1, "-"]);
-    a.push(["mixamorigRightArm", "rotation", "y", 0.8, "+"]);
-    a.push(["mixamorigRightForeArm", "rotation", "y", 1.0, "-"]);
-    a.push(["mixamorigRightHand", "rotation", "x", -0.7, "-"]);
-    a.push(["mixamorigRightHand", "rotation", "y", 0.1, "-"]);
+    a.push(["mixamorigRightArm", "rotation", "x", -0.45, "+"]);
+    a.push(["mixamorigRightArm", "rotation", "y", 0.3, "-"]);
+    a.push(["mixamorigRightForeArm", "rotation", "y", 1.9, "+"]);
+    a.push(["mixamorigRightHand", "rotation", "z", -0.5, "-"]);
     a.push(["mixamorigNeck", "rotation", "x", Math.PI/12 + 0.12, "+"]);
     ref.animations.push(a);
 
@@ -697,7 +699,7 @@ export const ASK = (ref) => {
     a.push(["mixamorigRightHandRing1", "rotation", "z", 0, "-"]);
     a.push(["mixamorigRightHandPinky1", "rotation", "z", 0, "-"]);
     a.push(["mixamorigRightHandThumb1", "rotation", "x", 0, "-"]);
-    a.push(["mixamorigRightHandThumb1", "rotation", "y", 0, "+"]);
+    a.push(["mixamorigRightHandThumb1", "rotation", "z", 0, "-"]);
     a.push(["mixamorigRightHandThumb2", "rotation", "y", 0, "+"]);
 
     a.push(["mixamorigRightArm", "rotation", "x", 0, "+"]);
@@ -707,7 +709,7 @@ export const ASK = (ref) => {
     a.push(["mixamorigRightForeArm", "rotation", "y", Math.PI/1.5, "+"]);
     a.push(["mixamorigRightForeArm", "rotation", "z", 0, "-"]);
     a.push(["mixamorigRightHand", "rotation", "x", 0, "+"]);
-    a.push(["mixamorigRightHand", "rotation", "y", 0, "-"]);
+    a.push(["mixamorigRightHand", "rotation", "y", 0, "+"]);
     a.push(["mixamorigRightHand", "rotation", "z", 0, "+"]);
     a.push(["mixamorigNeck", "rotation", "x", Math.PI/12, "-"]);
     ref.animations.push(a);
